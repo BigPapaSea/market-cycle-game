@@ -200,8 +200,8 @@ const NEWS = [
     effects:{energy:0.07,ind:-0.04,tele:-0.03},
     reasons:{energy:"Oil producers earn massive profits at $120/barrel",ind:"Fuel costs spike for trucking, shipping, and factories",tele:"Cell tower and data center operations face surging energy bills"}},
   {headline:"FED SIGNALS RATE HIKES — WALL STREET BRACES",sub:"Banks profit from higher rates; growth stocks sell off",year:"2022",paper:"FINANCIAL TIMES",phases:["peak"],
-    effects:{fin:0.05,tech:-0.06,disc:-0.04},
-    reasons:{fin:"Banks earn more on every loan when interest rates rise",tech:"Higher rates crush valuations of companies whose profits are years away",disc:"Borrowing costs rise — consumers take fewer loans for big purchases"}},
+    effects:{fin:0.05,tech:-0.06,mat:-0.04},
+    reasons:{fin:"Banks earn more on every loan when interest rates rise",tech:"Higher rates crush valuations of companies whose profits are years away",mat:"Higher borrowing costs slam capital-intensive mining and manufacturing operations"}},
   {headline:"CAR SALES PLUMMET AS CONSUMERS PULL BACK",sub:"Dealerships empty; banks tighten auto lending",year:"2019",paper:"DETROIT FREE PRESS",phases:["peak","minor_recession"],
     effects:{disc:-0.04,fin:-0.03,health:0.02},
     reasons:{disc:"Auto dealers see empty lots — consumers stop making big purchases",fin:"Banks tighten auto lending as the risk of defaults rises",health:"Nervous investors rotate into defensive healthcare stocks"}},
@@ -254,7 +254,7 @@ const NEWS = [
     effects:{energy:0.06,tech:0.04,ind:-0.04},
     reasons:{energy:"Pipeline shutdown spikes gas prices — energy stocks surge",tech:"Cybersecurity companies see a massive surge in demand overnight",ind:"Supply chain disruption halts factories waiting for fuel deliveries"}},
   {headline:"WAR IN EUROPE — MARKETS PLUNGE",sub:"Energy spikes; consumer confidence collapses",year:"2022",paper:"BBC NEWS",phases:["major_recession"],
-    effects:{energy:0.07,disc:-0.05,fin:-0.04},
+    effects:{energy:0.07,disc:-0.03,fin:-0.04},
     reasons:{energy:"Global oil and gas prices spike on supply disruption fears",disc:"Consumer confidence collapses — nobody shops during a war scare",fin:"European bank exposure creates contagion fears worldwide"}},
   {headline:"HEALTHCARE STAFFING CRISIS DEEPENS",sub:"Nurse shortages; telehealth booms",year:"2022",paper:"REUTERS",phases:["early_recovery"],
     effects:{health:-0.03,tele:0.03,staples:0.02},
@@ -273,7 +273,92 @@ const NEWS = [
     reasons:{disc:"Pent-up demand explodes — consumers splurge on clothes, travel, and dining",fin:"Credit card spending surges — banks earn record transaction fees",staples:"Consumers upgrade from generic basics to premium brands and experiences"}},
   {headline:"INFLATION HITS 9% — WORST IN 40 YEARS",sub:"Commodities win; growth loses",year:"2022",paper:"BUREAU OF LABOR STATISTICS",phases:["peak","minor_recession"],
     effects:{energy:0.05,tech:-0.05,tele:-0.04},
-    reasons:{energy:"Oil and commodity companies benefit directly from rising prices",tech:"Sky-high interest rates to fight inflation crush growth stock valuations",tele:"Telecom can\'t raise phone bills fast enough to keep up with inflation"}}
+    reasons:{energy:"Oil and commodity companies benefit directly from rising prices",tech:"Sky-high interest rates to fight inflation crush growth stock valuations",tele:"Telecom can\'t raise phone bills fast enough to keep up with inflation"}},
+  // === BATCH 2: 28 additional events ===
+  {headline:"COVID LOCKDOWNS SHUT DOWN THE WORLD",sub:"Hospitals overwhelmed; everything else closes",year:"2020",paper:"WORLD HEALTH ORGANIZATION",phases:["major_recession","trough"],
+    effects:{health:0.05,disc:-0.04,energy:-0.04},
+    reasons:{health:"Hospitals, drug makers, and medical supply companies surge on pandemic demand",disc:"Stores, restaurants, and entertainment shut down entirely — zero revenue",energy:"Nobody is driving or flying — oil demand collapses overnight"}},
+  {headline:"TIKTOK FACES U.S. BAN — 150M USERS PANICKED",sub:"Social media shakeup; telecom wins eyeballs",year:"2024",paper:"CNN",phases:["peak","minor_recession"],
+    effects:{tech:-0.04,tele:0.04,staples:-0.03},
+    reasons:{tech:"Advertising revenue threatened as the biggest social platform faces shutdown",tele:"Phone carriers and rival platforms absorb migrating users and ad dollars",staples:"Consumer goods brands that used TikTok for cheap marketing lose their best advertising channel"}},
+  {headline:"FACEBOOK HIT WITH RECORD $5 BILLION FINE",sub:"Privacy crackdown rattles Big Tech; banks benefit",year:"2019",paper:"FEDERAL TRADE COMMISSION",phases:["minor_recession"],
+    effects:{tech:-0.05,fin:0.03,tele:0.02},
+    reasons:{tech:"Massive fine plus new regulations threaten the entire ad-supported tech model",fin:"Banks positioned as safe, regulated alternatives attract cautious investors",tele:"Telecom companies already follow strict privacy rules — they look stable by comparison"}},
+  {headline:"IRAN BLOCKS STRAIT OF HORMUZ — OIL SHIPMENTS HALTED",sub:"20% of world oil supply threatened; panic buying begins",year:"2024",paper:"REUTERS",phases:["peak","major_recession"],
+    effects:{energy:0.07,ind:-0.05,mat:-0.03},
+    reasons:{energy:"Oil prices skyrocket as the world\'s most important shipping lane closes",ind:"Factories and shipping companies face crippling fuel costs overnight",mat:"Raw material shipping routes disrupted — commodity import costs spike"}},
+  {headline:"APPLE UNVEILS DEVICE THAT CHANGES EVERYTHING",sub:"Tech stocks soar; old industries feel left behind",year:"2024",paper:"THE VERGE",phases:["expansion","minor_expansion"],
+    effects:{tech:0.05,disc:0.03,ind:-0.03},
+    reasons:{tech:"Apple\'s new product creates a wave of excitement across the entire tech sector",disc:"Consumer electronics retailers see massive pre-order demand",ind:"Traditional manufacturers worry about being disrupted by the new technology"}},
+  {headline:"SILICON VALLEY BANK COLLAPSES — BANK RUN FEARS SPREAD",sub:"Tech startups scramble; safe havens surge",year:"2023",paper:"WALL STREET JOURNAL",phases:["major_recession"],
+    effects:{fin:-0.06,tech:-0.03,util:0.04},
+    reasons:{fin:"Bank failure triggers panic — depositors yank money from regional banks everywhere",tech:"Startups that banked at SVB can\'t make payroll; venture funding freezes",util:"Investors flee to the safest, most boring stocks they can find — utilities"}},
+  {headline:"NETFLIX LOSES 1 MILLION SUBSCRIBERS IN ONE QUARTER",sub:"Streaming bubble bursts; traditional media rebounds",year:"2022",paper:"VARIETY",phases:["minor_recession","peak"],
+    effects:{disc:-0.03,tele:0.03,staples:0.02},
+    reasons:{disc:"The streaming model is questioned — consumers are cutting subscriptions to save money",tele:"Cable and internet providers suddenly don\'t look so outdated after all",staples:"When entertainment budgets shrink, grocery spending stays steady — defensive wins"}},
+  {headline:"AMAZON WAREHOUSE WORKERS GO ON NATIONWIDE STRIKE",sub:"Holiday shopping disrupted; local retailers celebrate",year:"2023",paper:"NEW YORK TIMES",phases:["minor_recession"],
+    effects:{disc:-0.03,staples:0.03,ind:0.03},
+    reasons:{disc:"The biggest online retailer can\'t ship packages — holiday sales take a hit",staples:"Shoppers return to physical stores for essentials — Walmart and Target win",ind:"Competing delivery and logistics companies pick up Amazon\'s overflow — FedEx and UPS surge"}},
+  {headline:"SELF-DRIVING TAXIS APPROVED IN ALL 50 STATES",sub:"Auto revolution begins; oil demand questioned",year:"2025",paper:"DEPARTMENT OF TRANSPORTATION",phases:["expansion"],
+    effects:{tech:0.05,energy:-0.04,ind:-0.03},
+    reasons:{tech:"AI and sensor companies see massive demand for autonomous vehicle technology",energy:"Efficient robot taxis could cut fuel consumption by 30% — oil\'s future darkens",ind:"Traditional automakers and truck drivers face an existential threat"}},
+  {headline:"CATEGORY 5 HURRICANE DEVASTATES GULF COAST",sub:"Rebuilding begins; energy infrastructure damaged",year:"2023",paper:"WEATHER CHANNEL",phases:["minor_recession","major_recession"],
+    effects:{ind:0.05,mat:0.04,energy:-0.04},
+    reasons:{ind:"Construction and rebuilding contracts pour in — heavy equipment demand surges",mat:"Lumber, steel, and building materials prices spike on rebuilding demand",energy:"Damaged refineries and pipelines cut oil production for months"}},
+  {headline:"CHINA BANS ALL CRYPTOCURRENCY — BITCOIN CRASHES 40%",sub:"Crypto panic spreads; traditional banks look smart",year:"2021",paper:"SOUTH CHINA MORNING POST",phases:["peak","minor_recession"],
+    effects:{tech:-0.04,fin:0.03,staples:0.02},
+    reasons:{tech:"Crypto exchanges and blockchain companies lose their biggest market overnight",fin:"Traditional banks and brokerages look stable and trustworthy by comparison",staples:"Risk-off sentiment drives investors toward the safest, most boring sectors"}},
+  {headline:"TRADE WAR ESCALATES — 50% TARIFFS ON IMPORTS",sub:"American factories cheer; consumers pay more",year:"2019",paper:"BLOOMBERG",phases:["peak"],
+    effects:{ind:0.04,disc:-0.04,mat:-0.03},
+    reasons:{ind:"Domestic manufacturers gain a competitive edge as foreign goods get expensive",disc:"Retailers face higher costs on imported goods — prices rise, sales fall",mat:"Raw material supply chains are disrupted by retaliatory tariffs both ways"}},
+  {headline:"STUDENT LOAN PAYMENTS RESTART — 40 MILLION AFFECTED",sub:"Wallets tighten; lenders benefit",year:"2023",paper:"DEPARTMENT OF EDUCATION",phases:["minor_recession"],
+    effects:{disc:-0.03,fin:0.03,staples:0.02},
+    reasons:{disc:"Young consumers redirect hundreds per month from shopping to loan payments",fin:"Banks and loan servicers collect billions in resumed payments",staples:"Even with tighter budgets, people still buy groceries and toothpaste"}},
+  {headline:"GLOBAL SHIPPING CRISIS — CONTAINER SHIP BLOCKS CANAL",sub:"Supply chains choked; commodity prices surge",year:"2021",paper:"ASSOCIATED PRESS",phases:["peak","minor_recession"],
+    effects:{mat:0.03,ind:-0.04,energy:0.03},
+    reasons:{mat:"Scarcity of raw materials drives commodity prices through the roof",ind:"Factories idle as parts and materials sit on ships that can\'t move",energy:"Shipping delays spike fuel demand as vessels reroute around Africa"}},
+  {headline:"MINIMUM WAGE JUMPS TO $20 — FAST FOOD PRICES SOAR",sub:"Workers celebrate; restaurants scramble",year:"2024",paper:"DEPARTMENT OF LABOR",phases:["early_recovery","minor_expansion"],
+    effects:{disc:-0.04,staples:-0.03,health:0.03},
+    reasons:{disc:"Restaurant and retail chains see labor costs spike — profits squeezed hard",staples:"Grocery companies face the same wage pressure — food prices climb",health:"Healthcare is less affected by minimum wage — and higher wages mean more people can afford insurance"}},
+  {headline:"WORST DROUGHT IN 50 YEARS DESTROYS CROPS",sub:"Food prices spike; commodities surge",year:"2023",paper:"USDA",phases:["major_recession","trough"],
+    effects:{staples:0.03,mat:0.02,disc:-0.04},
+    reasons:{staples:"Food companies raise prices — their revenue grows even as crop supply shrinks",mat:"Agricultural commodities and fertilizer prices surge on scarcity",disc:"Consumers spend so much more on food that discretionary spending collapses"}},
+  {headline:"SPACEX LAUNCHES FIRST TOURIST TRIP TO MARS",sub:"Space economy ignites; down-to-earth stocks yawn",year:"2026",paper:"SPACENEWS",phases:["expansion"],
+    effects:{ind:0.04,tech:0.03,util:-0.02},
+    reasons:{ind:"Aerospace and defense contractors ride the wave of space industry investment",tech:"Satellite, communications, and space software companies see new demand",util:"Boring earth-bound utilities lose investor attention to exciting space stocks"}},
+  {headline:"MASSIVE DATA BREACH EXPOSES 500 MILLION ACCOUNTS",sub:"Cybersecurity booms; consumer trust collapses",year:"2023",paper:"WIRED",phases:["minor_recession"],
+    effects:{tech:-0.03,tele:-0.04,fin:0.03},
+    reasons:{tech:"The breached company\'s stock tanks, dragging down tech sentiment broadly",tele:"Telecom companies holding customer data face intense regulatory scrutiny",fin:"Banks\' existing security infrastructure looks strong — investors rotate in"}},
+  {headline:"BREAKTHROUGH CANCER DRUG CURES 90% IN TRIALS",sub:"Biotech soars; medical costs questioned",year:"2025",paper:"NEW ENGLAND JOURNAL OF MEDICINE",phases:["expansion","early_recovery"],
+    effects:{health:0.06,tech:0.02,util:-0.03},
+    reasons:{health:"Pharmaceutical and biotech stocks explode on the most promising drug trial in decades",tech:"AI-powered drug discovery gets credit — biotech-tech crossover stocks surge",util:"Investors abandon safe defensive utilities to chase exciting healthcare gains"}},
+  {headline:"GOLD HITS ALL-TIME HIGH AS DOLLAR WEAKENS",sub:"Safe havens shine; growth stocks fade",year:"2024",paper:"KITCO NEWS",phases:["trough","major_recession"],
+    effects:{mat:0.04,fin:-0.03,tech:-0.03},
+    reasons:{mat:"Gold miners and precious metals companies see record profits",fin:"A weak dollar hurts international banking operations and trading desks",tech:"Rising gold prices signal fear — investors dump risky growth stocks"}},
+  {headline:"STREAMING WARS — DISNEY+ PASSES NETFLIX IN SUBSCRIBERS",sub:"Entertainment reshuffled; traditional media fades",year:"2024",paper:"DEADLINE",phases:["minor_expansion"],
+    effects:{disc:0.04,tech:0.03,tele:-0.03},
+    reasons:{disc:"Content spending and subscriber wars boost the entire entertainment sector",tech:"Streaming infrastructure, cloud computing, and content delivery companies benefit",tele:"Traditional cable TV and telecom bundles lose subscribers faster than ever"}},
+  {headline:"5G ROLLOUT COMPLETE — RURAL AMERICA FINALLY CONNECTED",sub:"Telecom profits soar; tech expands reach",year:"2025",paper:"FCC REPORT",phases:["early_recovery","minor_expansion"],
+    effects:{tele:0.06,tech:0.03,util:-0.02},
+    reasons:{tele:"Telecom carriers reap the reward of years of 5G infrastructure investment",tech:"Faster networks mean more app downloads, streaming, and cloud computing",util:"Telecom companies now compete with utilities for the \'boring but reliable\' investor dollar"}},
+  {headline:"FAST FOOD CHAINS REPLACE CASHIERS WITH AI KIOSKS",sub:"Automation accelerates; workers displaced",year:"2025",paper:"BUSINESS INSIDER",phases:["expansion","peak"],
+    effects:{tech:0.04,disc:0.03,ind:-0.04},
+    reasons:{tech:"AI and robotics companies win massive contracts from restaurant chains",disc:"Lower labor costs boost restaurant profit margins significantly",ind:"Manufacturing and service workers fear the same automation wave is coming for them"}},
+  {headline:"RECORD WILDFIRE SEASON — CALIFORNIA DECLARES EMERGENCY",sub:"Power grid strained; rebuilding starts",year:"2023",paper:"LOS ANGELES TIMES",phases:["trough"],
+    effects:{util:-0.04,mat:0.02,health:0.03},
+    reasons:{util:"Utility companies face billions in liability for fires sparked by power lines",mat:"Building materials demand surges as thousands of homes need rebuilding",health:"Smoke-related illness and healthcare demand spike across the West Coast"}},
+  {headline:"OPEC SLASHES OIL PRODUCTION BY 2 MILLION BARRELS",sub:"Gas prices jump; consumers feel the squeeze",year:"2022",paper:"OPEC PRESS RELEASE",phases:["early_recovery"],
+    effects:{energy:0.06,tele:-0.03,staples:-0.03},
+    reasons:{energy:"Less supply means higher oil prices — energy companies earn fatter profits",tele:"Cell tower and data center operations face rising energy bills",staples:"Higher fuel and transportation costs squeeze grocery store profit margins"}},
+  {headline:"CONGRESS BANS SOCIAL MEDIA FOR KIDS UNDER 16",sub:"Tech stocks tumble; traditional entertainment wins",year:"2025",paper:"POLITICO",phases:["minor_expansion","peak"],
+    effects:{tech:-0.05,tele:0.03,staples:0.02},
+    reasons:{tech:"Social media companies lose their most engaged demographic — ad revenue threatened",tele:"Parents switch kids to basic phone plans — telecom subscriber numbers jump",staples:"With less screen time, families spend more on physical activities and household goods"}},
+  {headline:"BRUTAL HEAT WAVE CRASHES ELECTRIC GRID",sub:"Rolling blackouts; energy demand spikes",year:"2023",paper:"NATIONAL WEATHER SERVICE",phases:["trough","minor_recession"],
+    effects:{util:0.05,energy:0.04,tech:-0.03},
+    reasons:{util:"Electricity demand hits records — utilities charge peak pricing and expand capacity",energy:"Natural gas and backup power generation companies run at full blast",tech:"Data centers forced offline by blackouts — cloud computing disrupted"}},
+  {headline:"TAYLOR SWIFT CONCERT CRASHES TICKETMASTER — CONGRESS INVESTIGATES",sub:"Antitrust fears hit entertainment; competition emerges",year:"2022",paper:"ROLLING STONE",phases:["expansion","minor_expansion"],
+    effects:{disc:0.04,tech:-0.03,fin:0.02},
+    reasons:{disc:"Live entertainment demand proves insatiable — concert and event stocks soar",tech:"Ticketmaster\'s parent company faces antitrust breakup — tech monopolies under fire",fin:"Payment processors and competing ticket platforms see new business opportunities"}}
 ];
 
 const BULL_SCENES=[
@@ -444,7 +529,7 @@ function renderSetup(){
         <button id="firebaseBtn" class="btn btn-sm btn-gold" onclick="loadFromFirebase()">🔄 Load Portfolios from Players</button>
         <button class="btn btn-sm btn-outline" onclick="loadDemoPlayers()">🧪 Demo Players</button>
         ${S.players.length>0?`<button class="btn btn-sm btn-outline" onclick="setState({players:[]})">Clear All</button>`:''}
-        <button class="btn btn-sm btn-outline" onclick="clearFirebase()" title="Clear submitted portfolios from Firebase">🗑️</button>
+        <button class="btn btn-sm btn-outline" onclick="newGame()" title="Clear Firebase and start completely fresh">🆕 New Game</button>
       </div>
     </div>
 
@@ -829,7 +914,7 @@ function renderResults(){
     <p style="margin-bottom:12px"><strong style="color:var(--accent)">5. Fees quietly eat your lunch.</strong> Every round, active portfolios paid a ${(MGMT_FEE*100).toFixed(1)}% management fee — about ${totalFeeDrag}% total over the game. The index paid nothing. In real life, the average mutual fund charges ~1% per year, which adds up to tens of thousands of dollars over a career.</p>
     <p><strong style="color:var(--accent)">6. Time in the market beats timing the market.</strong> The best strategy for most people: buy a diversified, low-cost index fund, keep adding to it, and don't panic when markets drop. Boring? Yes. Effective? Extremely.</p>
   </div></div>
-  <div style="display:flex;gap:12px;justify-content:center;margin-top:24px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="resetGame()">🔄 Play Again</button><button class="btn btn-outline" onclick="setState({screen:'play'})">← Dashboard</button></div></div>`;
+  <div style="display:flex;gap:12px;justify-content:center;margin-top:24px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="resetGame()">🔄 Play Again (Same Players)</button><button class="btn btn-gold" style="font-size:17px;padding:16px 44px" onclick="newGame()">🆕 New Game</button><button class="btn btn-outline" onclick="setState({screen:'play'})">← Dashboard</button></div></div>`;
 }
 
 // ===================== EVENTS =====================
@@ -944,7 +1029,22 @@ function loadFromFirebase(){
 }
 function clearFirebase(){
   if(!confirm('Clear all submitted portfolios from Firebase? This cannot be undone.'))return;
-  fetch(FIREBASE_URL+'/portfolios.json',{method:'DELETE'}).then(()=>{render()}).catch(err=>console.error(err));
+  Promise.all([
+    fetch(FIREBASE_URL+'/portfolios.json',{method:'DELETE'}),
+    fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}),
+    fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'})
+  ]).then(()=>{render()}).catch(err=>console.error(err));
+}
+function newGame(){
+  if(!confirm('Start a completely new game? This clears all portfolios from Firebase and resets everything. Kids will need to re-submit.'))return;
+  Promise.all([
+    fetch(FIREBASE_URL+'/portfolios.json',{method:'DELETE'}),
+    fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}),
+    fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'})
+  ]).then(()=>{
+    S.players=[];S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S.screen='setup';S.playTab='dashboard';S.gameNum++;
+    render();
+  }).catch(err=>{console.error(err);alert('Error clearing Firebase: '+err.message)});
 }
 function enableRebalance(){
   // Write game state to Firebase so rebalance page can show performance
@@ -1035,7 +1135,11 @@ function processRound(){const phase=S.cycle[S.curRound],ret=calcReturns(phase,S.
 function showComm(){S.newsStep=3;render()}
 function finishRound(){S.curRound++;S.screen='play';S.playTab='dashboard';render()}
 function showResults(){S.screen='results';render()}
-function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';render()}
+function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';
+  // Clear stale game state from Firebase so player page doesn't show rebalance mode
+  fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}).catch(()=>{});
+  fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'}).catch(()=>{});
+  render()}
 
 render();
 </script>

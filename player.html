@@ -4,299 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Market Cycle Game — Build Your Portfolio</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg: #faf9f6; --card: #fff; --border: #e8e5e0; --text: #1a1a1a; --muted: #8a8580;
-  --accent: #c5a55a; --green: #2d8a4e; --red: #c0392b;
-  --font-d: 'Playfair Display', Georgia, serif;
-  --font-b: 'Source Sans 3', sans-serif;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: var(--font-b); background: var(--bg); color: var(--text); }
-h1,h2,h3 { font-family: var(--font-d); }
-.container { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
-
-/* Header */
-.header { text-align: center; margin-bottom: 24px; }
-.header-sub { font-size: 12px; letter-spacing: 5px; color: var(--muted); font-weight: 600; margin-bottom: 4px; }
-.header h1 { font-size: 38px; margin-bottom: 6px; }
-.header p { color: var(--muted); font-size: 15px; }
-
-/* Name input - prominent */
-.name-section { background: var(--card); border: 2px solid var(--accent); border-radius: 16px; padding: 22px 28px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 12px rgba(197,165,90,0.1); }
-.name-section label { font-family: var(--font-d); font-weight: 900; font-size: 22px; white-space: nowrap; }
-.name-input { flex: 1; padding: 14px 20px; border-radius: 12px; border: 2px solid var(--border); font-size: 20px; font-family: var(--font-b); font-weight: 600; transition: border-color 0.2s; }
-.name-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(197,165,90,0.15); }
-
-/* Budget bar */
-.budget-bar { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 18px 28px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-.budget-left { display: flex; align-items: baseline; gap: 8px; }
-.budget-num { font-family: var(--font-d); font-size: 44px; font-weight: 900; transition: color 0.3s; }
-.budget-of { font-size: 18px; color: var(--muted); }
-.budget-msg { font-family: var(--font-d); font-size: 32px; font-weight: 900; }
-.budget-visual { flex: 1; max-width: 300px; margin: 0 24px; }
-.budget-track { height: 10px; border-radius: 5px; background: #e8e5e0; overflow: hidden; }
-.budget-fill { height: 100%; border-radius: 5px; transition: width 0.3s, background 0.3s; }
-
-/* Offense/Defense summary */
-.summary-box { border-radius: 16px; padding: 0; margin-bottom: 24px; overflow: hidden; border: 1px solid var(--border); }
-.summary-title { text-align: center; padding: 16px 24px 12px; background: var(--card); border-bottom: 1px solid var(--border); }
-.summary-grid { display: grid; grid-template-columns: 1fr 1fr; }
-.summary-half { padding: 22px 28px; }
-.summary-half.offense-bg { background: linear-gradient(150deg, #fff6ee, #ffeddb); }
-.summary-half.defense-bg { background: linear-gradient(150deg, #edf3ff, #dde9ff); }
-.summary-half h4 { font-size: 17px; margin-bottom: 8px; font-family: var(--font-d); }
-.summary-half p { font-size: 14px; color: #555; line-height: 1.6; }
-
-/* Sector cards */
-.sectors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 18px; margin-bottom: 28px; }
-.sector-card { border-radius: 16px; padding: 22px; position: relative; overflow: hidden; transition: all 0.2s; }
-.sector-card.offense { background: linear-gradient(150deg, #fff8ef, #fff2e4); border: 1px solid #fed7aa50; }
-.sector-card.defense { background: linear-gradient(150deg, #f0f6ff, #ebf3fd); border: 1px solid #bae6fd50; }
-.sector-card.has-alloc { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
-
-/* Sector header */
-.sector-header { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
-.sector-icon { font-size: 32px; }
-.sector-name { font-family: var(--font-d); font-size: 24px; font-weight: 900; }
-.sector-badge { font-size: 12px; padding: 4px 12px; border-radius: 6px; font-weight: 700; margin-left: auto; }
-.sector-badge.offense { background: #fef2f2; color: #b91c1c; }
-.sector-badge.defense { background: #eff6ff; color: #1d4ed8; }
-.sector-desc { font-size: 14px; color: #666; margin-bottom: 2px; font-weight: 500; text-align: center; }
-.sector-examples { font-size: 13px; color: #aaa; font-style: italic; margin-bottom: 14px; text-align: center; }
-
-/* Beta + Dividend row */
-.metrics-row { display: flex; gap: 32px; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--border); justify-content: center; }
-.metric { text-align: center; }
-.metric-label { font-size: 12px; color: var(--muted); margin-bottom: 2px; display: flex; align-items: center; gap: 4px; justify-content: center; }
-.metric-val { font-family: var(--font-d); font-size: 24px; font-weight: 900; }
-
-/* PE gauge box */
-.pe-box { background: #fafaf8; border-radius: 14px; padding: 16px; border: 1px solid #e8e5e0; margin-bottom: 16px; }
-.pe-title { text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; font-weight: 700; margin-bottom: 6px; }
-
-/* Speedometer */
-.speedo-wrap { position: relative; width: 200px; height: 120px; margin: 0 auto; }
-
-/* Allocation slider */
-.alloc-section { }
-.alloc-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.alloc-label { font-size: 15px; font-weight: 700; color: var(--muted); }
-.alloc-amount { font-family: var(--font-d); font-size: 28px; font-weight: 900; }
-.alloc-slider-wrap { position: relative; height: 36px; display: flex; align-items: center; }
-.alloc-track { position: absolute; left: 0; right: 0; height: 10px; border-radius: 5px; background: #e8e5e0; }
-.alloc-fill { position: absolute; left: 0; height: 10px; border-radius: 5px; transition: width 0.15s; }
-.alloc-input { position: relative; width: 100%; height: 36px; opacity: 0; cursor: pointer; z-index: 2; -webkit-appearance: none; }
-.alloc-thumb { position: absolute; top: 50%; width: 28px; height: 28px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transform: translate(-50%, -50%); pointer-events: none; transition: left 0.1s; }
-
-/* Submit */
-.submit-section { text-align: center; padding: 20px 0; }
-.submit-btn { font-family: var(--font-b); padding: 18px 56px; border-radius: 14px; border: none; font-size: 20px; font-weight: 800; cursor: pointer; transition: all 0.2s; }
-.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-.submit-btn.ready { background: linear-gradient(135deg, var(--green), #228b3b); color: white; }
-.submit-btn.not-ready { background: #e8e5e0; color: #aaa; cursor: not-allowed; }
-/* Risk Appetite Meter */
-.risk-meter { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 24px 28px; margin-bottom: 24px; transition: all 0.3s; }
-.risk-meter.empty { opacity: 0.4; }
-.risk-title { font-family: var(--font-d); font-size: 20px; font-weight: 900; text-align: center; margin-bottom: 4px; }
-.risk-subtitle { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 18px; }
-.risk-bar { display: flex; height: 18px; border-radius: 9px; overflow: hidden; margin-bottom: 6px; position: relative; }
-.risk-segment { flex: 1; position: relative; }
-.risk-bar-labels { display: grid; grid-template-columns: repeat(5, 1fr); font-size: 10px; font-weight: 600; margin-bottom: 16px; }
-.risk-pointer { position: absolute; top: -10px; transform: translateX(-50%); z-index: 3; transition: left 0.4s ease; }
-.risk-pointer-arrow { width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid #1a1a1a; margin: 0 auto; }
-.risk-pointer-line { width: 3px; height: 26px; background: #1a1a1a; margin: 0 auto; border-radius: 2px; }
-.risk-result { text-align: center; }
-.risk-result-label { font-family: var(--font-d); font-size: 28px; font-weight: 900; transition: color 0.3s; }
-.risk-result-detail { font-size: 14px; color: var(--muted); margin-top: 4px; }
-.risk-stats { display: flex; justify-content: center; gap: 32px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
-.risk-stat { text-align: center; }
-.risk-stat-label { font-size: 11px; color: var(--muted); }
-.risk-stat-val { font-family: var(--font-d); font-size: 20px; font-weight: 900; }
-
-/* Cash section */
-.cash-section { background: linear-gradient(150deg, #1a1a1a, #2d2d2d); border: 2px solid #c5a55a; border-radius: 20px; padding: 28px; margin-bottom: 20px; color: #e8e5e0; position: relative; overflow: hidden; }
-.cash-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(197,165,90,0.03) 20px, rgba(197,165,90,0.03) 40px); pointer-events: none; }
-
-.submit-msg { font-size: 13px; color: var(--muted); margin-top: 8px; }
+:root{--bg:#faf9f6;--card:#fff;--border:#e8e5e0;--text:#1a1a1a;--muted:#8a8580;--accent:#c5a55a;--green:#2d8a4e;--red:#c0392b;--font-d:'Playfair Display',Georgia,serif;--font-b:'Source Sans 3',sans-serif;--font-m:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text)}
+h1,h2,h3{font-family:var(--font-d)}
+.container{max-width:1200px;margin:0 auto;padding:28px 24px}
+.header{text-align:center;margin-bottom:24px}
+.header-sub{font-size:12px;letter-spacing:5px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.header h1{font-size:38px;margin-bottom:6px}
+.header p{color:var(--muted);font-size:15px}
+.round-badge{display:inline-block;background:#1a1a1a;color:var(--accent);padding:6px 18px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:2px;margin-bottom:12px}
+.name-section{background:var(--card);border:2px solid var(--accent);border-radius:16px;padding:22px 28px;margin-bottom:20px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 12px rgba(197,165,90,0.1);flex-wrap:wrap}
+.name-section label{font-family:var(--font-d);font-weight:900;font-size:22px;white-space:nowrap}
+.name-input{flex:1;padding:14px 20px;border-radius:12px;border:2px solid var(--border);font-size:20px;font-family:var(--font-b);font-weight:600;transition:border-color .2s;min-width:180px}
+.name-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(197,165,90,0.15)}
+.name-select{flex:1;padding:14px 20px;border-radius:12px;border:2px solid var(--border);font-size:20px;font-family:var(--font-b);font-weight:600;min-width:180px;background:var(--card);cursor:pointer;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238a8580' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:48px}
+.name-select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(197,165,90,0.15)}
+.name-warn{font-size:13px;color:var(--red);font-weight:600;display:none;width:100%;margin-top:-8px;padding-left:4px}
+.perf-bar{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:18px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:12px}
+.perf-stat{text-align:center;min-width:100px}
+.perf-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+.perf-val{font-family:var(--font-d);font-size:28px;font-weight:900}
+.old-portfolio{background:#1a1a1a;border-radius:16px;padding:20px 28px;margin-bottom:20px;color:#e8e5e0}
+.old-portfolio h3{color:var(--accent);font-size:16px;margin-bottom:12px}
+.old-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.old-icon{font-size:18px;width:24px;text-align:center}
+.old-name{font-size:13px;font-weight:700;min-width:120px}
+.old-bar-wrap{flex:1;height:8px;background:#333;border-radius:4px;overflow:hidden}
+.old-bar{height:100%;border-radius:4px}
+.old-amt{font-family:var(--font-m);font-size:13px;font-weight:700;min-width:45px;text-align:right;color:var(--accent)}
+.prev-strip{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;background:#1a1a1a;color:#e8e5e0;margin-bottom:10px;font-size:13px}
+.prev-strip-label{font-size:10px;color:#a8a29e;letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.prev-strip-val{font-family:var(--font-d);font-size:18px;font-weight:900;color:var(--accent)}
+.prev-strip-change{font-size:11px;margin-left:auto;font-weight:600}
+.budget-bar{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:18px 28px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;box-shadow:0 4px 20px rgba(0,0,0,0.06)}
+.budget-left{display:flex;align-items:baseline;gap:8px}
+.budget-num{font-family:var(--font-d);font-size:44px;font-weight:900;transition:color .3s}
+.budget-of{font-size:18px;color:var(--muted)}
+.budget-msg{font-family:var(--font-d);font-size:32px;font-weight:900}
+.budget-visual{flex:1;max-width:300px;margin:0 24px}
+.budget-track{height:10px;border-radius:5px;background:#e8e5e0;overflow:hidden}
+.budget-fill{height:100%;border-radius:5px;transition:width .3s,background .3s}
+.summary-box{border-radius:16px;padding:0;margin-bottom:24px;overflow:hidden;border:1px solid var(--border)}
+.summary-title{text-align:center;padding:16px 24px 12px;background:var(--card);border-bottom:1px solid var(--border)}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr}
+.summary-half{padding:22px 28px}
+.summary-half.offense-bg{background:linear-gradient(150deg,#fff6ee,#ffeddb)}
+.summary-half.defense-bg{background:linear-gradient(150deg,#edf3ff,#dde9ff)}
+.summary-half h4{font-size:17px;margin-bottom:8px;font-family:var(--font-d)}
+.summary-half p{font-size:14px;color:#555;line-height:1.6}
+.sectors-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:18px;margin-bottom:28px}
+.sector-card{border-radius:16px;padding:22px;position:relative;overflow:hidden;transition:all .2s}
+.sector-card.offense{background:linear-gradient(150deg,#fff8ef,#fff2e4);border:1px solid #fed7aa50}
+.sector-card.defense{background:linear-gradient(150deg,#f0f6ff,#ebf3fd);border:1px solid #bae6fd50}
+.sector-card.has-alloc{box-shadow:0 4px 16px rgba(0,0,0,0.1);transform:translateY(-2px)}
+.sector-header{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.sector-icon{font-size:32px}
+.sector-name{font-family:var(--font-d);font-size:24px;font-weight:900}
+.sector-badge{font-size:12px;padding:4px 12px;border-radius:6px;font-weight:700;margin-left:auto}
+.sector-badge.offense{background:#fef2f2;color:#b91c1c}
+.sector-badge.defense{background:#eff6ff;color:#1d4ed8}
+.sector-desc{font-size:14px;color:#666;margin-bottom:2px;font-weight:500;text-align:center}
+.sector-examples{font-size:13px;color:#aaa;font-style:italic;margin-bottom:14px;text-align:center}
+.metrics-row{display:flex;gap:32px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);justify-content:center}
+.metric{text-align:center}
+.metric-label{font-size:12px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:4px;justify-content:center}
+.metric-val{font-family:var(--font-d);font-size:24px;font-weight:900}
+.pe-box{background:#fafaf8;border-radius:14px;padding:16px;border:1px solid #e8e5e0;margin-bottom:16px}
+.pe-title{text-align:center;font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:700;margin-bottom:6px}
+.speedo-wrap{position:relative;width:200px;height:120px;margin:0 auto}
+.alloc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.alloc-label{font-size:15px;font-weight:700;color:var(--muted)}
+.alloc-amount{font-family:var(--font-d);font-size:28px;font-weight:900}
+.alloc-slider-wrap{position:relative;height:36px;display:flex;align-items:center}
+.alloc-track{position:absolute;left:0;right:0;height:10px;border-radius:5px;background:#e8e5e0}
+.alloc-fill{position:absolute;left:0;height:10px;border-radius:5px;transition:width .15s}
+.alloc-input{position:relative;width:100%;height:36px;opacity:0;cursor:pointer;z-index:2;-webkit-appearance:none}
+.alloc-thumb{position:absolute;top:50%;width:28px;height:28px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.2);transform:translate(-50%,-50%);pointer-events:none;transition:left .1s}
+.submit-section{text-align:center;padding:20px 0}
+.submit-btn{font-family:var(--font-b);padding:18px 56px;border-radius:14px;border:none;font-size:20px;font-weight:800;cursor:pointer;transition:all .2s}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.15)}
+.submit-btn.ready{background:linear-gradient(135deg,var(--green),#228b3b);color:white}
+.submit-btn.not-ready{background:#e8e5e0;color:#aaa;cursor:not-allowed}
+.keep-btn{font-family:var(--font-b);padding:14px 36px;border-radius:12px;border:2px solid var(--border);background:var(--card);font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted);margin-right:12px}
+.keep-btn:hover{border-color:var(--accent);color:var(--accent)}
+.risk-meter{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:24px;transition:all .3s}
+.risk-meter.empty{opacity:.4}
+.risk-title{font-family:var(--font-d);font-size:20px;font-weight:900;text-align:center;margin-bottom:4px}
+.risk-subtitle{font-size:13px;color:var(--muted);text-align:center;margin-bottom:18px}
+.risk-bar{display:flex;height:18px;border-radius:9px;overflow:hidden;margin-bottom:6px;position:relative}
+.risk-segment{flex:1}
+.risk-bar-labels{display:grid;grid-template-columns:repeat(5,1fr);font-size:10px;font-weight:600;margin-bottom:16px}
+.risk-pointer{position:absolute;top:-10px;transform:translateX(-50%);z-index:3;transition:left .4s ease}
+.risk-pointer-arrow{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid #1a1a1a;margin:0 auto}
+.risk-pointer-line{width:3px;height:26px;background:#1a1a1a;margin:0 auto;border-radius:2px}
+.risk-result{text-align:center}
+.risk-result-label{font-family:var(--font-d);font-size:28px;font-weight:900;transition:color .3s}
+.risk-result-detail{font-size:14px;color:var(--muted);margin-top:4px}
+.risk-stats{display:flex;justify-content:center;gap:32px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.risk-stat{text-align:center}
+.risk-stat-label{font-size:11px;color:var(--muted)}
+.risk-stat-val{font-family:var(--font-d);font-size:20px;font-weight:900}
+.cash-section{background:linear-gradient(150deg,#1a1a1a,#2d2d2d);border:2px solid #c5a55a;border-radius:20px;padding:28px;margin-bottom:20px;color:#e8e5e0;position:relative;overflow:hidden}
+.cash-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(197,165,90,0.03) 20px,rgba(197,165,90,0.03) 40px);pointer-events:none}
+.submit-msg{font-size:13px;color:var(--muted);margin-top:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
-
-<div class="container">
-  <div class="header">
-    <div class="header-sub">MINI RETREAT 2026</div>
-    <h1>🐂 Build Your Portfolio 🐻</h1>
-    <p>You have $1,000 to invest. Keep some in cash if you want safety, then pick exactly 3 sectors.</p>
-  </div>
-
-  <!-- Name FIRST -->
-  <div class="name-section">
-    <label>👤 Your Name:</label>
-    <input class="name-input" id="playerName" placeholder="Enter your name" />
-  </div>
-
-  <!-- Budget Bar (sticky) -->
-  <div class="budget-bar" id="budgetBar">
-    <div class="budget-left">
-      <span class="budget-num" id="budgetNum">$0</span>
-      <span class="budget-of">/ $1,000</span>
-    </div>
-    <div class="budget-visual">
-      <div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div>
-    </div>
-    <div class="budget-msg" id="budgetMsg" style="color:#b45309">$1,000 remaining</div>
-  </div>
-
-  <!-- Cash Allocation -->
-  <div class="cash-section" id="cashSection">
-    <div style="display:flex;align-items:center;gap:24px;position:relative;z-index:1">
-      <!-- Vault SVG -->
-      <div style="flex-shrink:0">
-        <svg viewBox="0 0 140 140" width="120" height="120">
-          <!-- Vault door frame -->
-          <rect x="5" y="5" width="130" height="130" rx="12" fill="#2a2a2a" stroke="#555" stroke-width="2"/>
-          <!-- Door circle -->
-          <circle cx="70" cy="70" r="52" fill="#333" stroke="#c5a55a" stroke-width="3"/>
-          <!-- Rivets -->
-          <circle cx="70" cy="22" r="4" fill="#888"/><circle cx="70" cy="118" r="4" fill="#888"/>
-          <circle cx="22" cy="70" r="4" fill="#888"/><circle cx="118" cy="70" r="4" fill="#888"/>
-          <circle cx="36" cy="36" r="3" fill="#777"/><circle cx="104" cy="36" r="3" fill="#777"/>
-          <circle cx="36" cy="104" r="3" fill="#777"/><circle cx="104" cy="104" r="3" fill="#777"/>
-          <!-- Combo dial outer -->
-          <circle cx="70" cy="70" r="28" fill="#444" stroke="#c5a55a" stroke-width="2"/>
-          <!-- Tick marks on dial -->
-          <line x1="70" y1="44" x2="70" y2="48" stroke="#c5a55a" stroke-width="2"/>
-          <line x1="70" y1="92" x2="70" y2="96" stroke="#c5a55a" stroke-width="1.5"/>
-          <line x1="44" y1="70" x2="48" y2="70" stroke="#c5a55a" stroke-width="1.5"/>
-          <line x1="92" y1="70" x2="96" y2="70" stroke="#c5a55a" stroke-width="1.5"/>
-          <!-- Dial center -->
-          <circle cx="70" cy="70" r="14" fill="#c5a55a"/>
-          <circle cx="70" cy="70" r="8" fill="#b8943f"/>
-          <circle cx="70" cy="70" r="3" fill="#1a1a1a"/>
-          <!-- Handle bar (T-handle) -->
-          <rect x="108" y="60" width="22" height="6" rx="3" fill="#c5a55a"/>
-          <rect x="125" y="50" width="6" height="26" rx="3" fill="#c5a55a"/>
-          <!-- Locking bolts -->
-          <rect x="2" y="40" width="8" height="6" rx="2" fill="#888"/>
-          <rect x="2" y="60" width="8" height="6" rx="2" fill="#888"/>
-          <rect x="2" y="80" width="8" height="6" rx="2" fill="#888"/>
-          <rect x="2" y="100" width="8" height="6" rx="2" fill="#888"/>
-        </svg>
-      </div>
-      <!-- Vault info -->
-      <div style="flex:1">
-        <div style="font-family:var(--font-d);font-size:28px;font-weight:900;color:#c5a55a;margin-bottom:4px">The Vault</div>
-        <div style="font-size:14px;color:#a8a29e;margin-bottom:4px">Your safe haven. Cash earns ~0.4% per round — guaranteed, no risk, no surprises. Protected from market crashes.</div>
-        <div style="display:flex;gap:20px;font-size:12px;color:#888;margin-bottom:12px">
-          <span>β Beta: <strong style="color:#c5a55a">0.0</strong></span>
-          <span>Return: <strong style="color:#c5a55a">~0.4%/round</strong></span>
-          <span>Risk: <strong style="color:#4ade80">None</strong></span>
-        </div>
-        <!-- Slider -->
-        <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-size:14px;font-weight:700;color:#a8a29e;white-space:nowrap">Lock away:</span>
-          <div class="alloc-slider-wrap" style="flex:1">
-            <div class="alloc-track" style="background:#444"></div>
-            <div class="alloc-fill" id="cashFill" style="width:0%;background:#c5a55a"></div>
-            <input type="range" class="alloc-input" id="cashSlider" min="0" max="1000" step="50" value="0" oninput="handleCashSlider(this.value)" />
-            <div class="alloc-thumb" id="cashThumb" style="left:0%;background:#c5a55a"></div>
-          </div>
-          <span class="alloc-amount" id="cashAmt" style="color:#555;font-size:32px">$0</span>
-        </div>
-        <div style="font-size:12px;color:#888;margin-top:8px;text-align:center" id="cashNote">Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Offense vs Defense BEFORE cards -->
-  <div class="summary-box">
-    <div class="summary-title">
-      <h3 style="color: var(--text); font-size: 22px; margin: 0;">💡 Offensive vs. Defensive Sectors — Read This First!</h3>
-    </div>
-    <div class="summary-grid">
-      <div class="summary-half offense-bg">
-        <h4 style="color: #c2410c;">🏈 Offensive (Growth)</h4>
-        <p>Technology, Consumer Disc., Financials, Energy, Industrials, Materials — these shine when the economy is growing but crash harder in recessions. Higher beta means bigger swings both ways. PEs get expensive when everyone is buying.</p>
-      </div>
-      <div class="summary-half defense-bg">
-        <h4 style="color: #1d4ed8;">🛡️ Defensive (Safety)</h4>
-        <p>Consumer Staples, Utilities, Healthcare, Telecom — people need groceries, electricity, medicine, and phone service no matter what the economy does. Lower beta, steadier dividends, and usually cheaper PEs during a boom.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Pick Your Sectors title -->
-  <div style="text-align:center; margin-bottom: 22px;">
-    <h2 style="font-size: 32px; font-weight: 900; color: var(--text);">👇 Pick Exactly 3 Sectors</h2>
-    <div style="font-size:14px;color:var(--muted);margin-top:4px" id="sectorCountMsg">0 of 3 selected</div>
-  </div>
-
-  <!-- Sectors -->
-  <div class="sectors-grid" id="sectorsGrid"></div>
-
-  <!-- Risk Appetite Meter -->
-  <div class="risk-meter empty" id="riskMeter">
-    <div class="risk-title">📊 Your Risk Appetite</div>
-    <div class="risk-subtitle">This updates as you build your portfolio</div>
-    <div style="position:relative;margin-bottom:6px">
-      <div class="risk-bar">
-        <div class="risk-segment" style="background:linear-gradient(90deg, #1d4ed8, #3b82f6)"></div>
-        <div class="risk-segment" style="background:linear-gradient(90deg, #3b82f6, #60a5fa)"></div>
-        <div class="risk-segment" style="background:linear-gradient(90deg, #eab308, #f59e0b)"></div>
-        <div class="risk-segment" style="background:linear-gradient(90deg, #f97316, #ea580c)"></div>
-        <div class="risk-segment" style="background:linear-gradient(90deg, #ea580c, #dc2626)"></div>
-      </div>
-      <div class="risk-pointer" id="riskPointer" style="left:50%">
-        <div class="risk-pointer-arrow"></div>
-        <div class="risk-pointer-line"></div>
-      </div>
-    </div>
-    <div class="risk-bar-labels">
-      <span style="color:#1d4ed8;text-align:center">Conservative</span>
-      <span style="color:#3b82f6;text-align:center">Moderately<br>Conservative</span>
-      <span style="color:#ca8a04;text-align:center">Moderate</span>
-      <span style="color:#ea580c;text-align:center">Moderately<br>Aggressive</span>
-      <span style="color:#dc2626;text-align:center">Aggressive</span>
-    </div>
-    <div class="risk-result">
-      <div class="risk-result-label" id="riskLabel" style="color:var(--muted)">—</div>
-      <div class="risk-result-detail" id="riskDetail">Allocate your $1,000 to see your risk profile</div>
-    </div>
-    <div class="risk-stats">
-      <div class="risk-stat">
-        <div class="risk-stat-label">Weighted Beta</div>
-        <div class="risk-stat-val" id="riskBeta" style="color:var(--muted)">—</div>
-      </div>
-      <div class="risk-stat">
-        <div class="risk-stat-label">Cash %</div>
-        <div class="risk-stat-val" id="riskCash" style="color:var(--muted)">—</div>
-      </div>
-      <div class="risk-stat">
-        <div class="risk-stat-label">Offensive %</div>
-        <div class="risk-stat-val" id="riskOff" style="color:var(--muted)">—</div>
-      </div>
-      <div class="risk-stat">
-        <div class="risk-stat-label">Defensive %</div>
-        <div class="risk-stat-val" id="riskDef" style="color:var(--muted)">—</div>
-      </div>
-      <div class="risk-stat">
-        <div class="risk-stat-label">Avg Dividend</div>
-        <div class="risk-stat-val" id="riskDiv" style="color:var(--muted)">—</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Submit -->
-  <div class="submit-section">
-    <button class="submit-btn not-ready" id="submitBtn" disabled onclick="submitPortfolio()">Enter your name and invest $1,000</button>
-    <div class="submit-msg" id="submitMsg">Drag the sliders above to allocate your $1,000 across sectors.</div>
-  </div>
+<div class="container" id="app">
+  <div style="text-align:center;padding:80px 24px"><div style="font-size:72px;margin-bottom:16px;opacity:.4">⏳</div><div style="font-family:var(--font-d);font-size:28px;font-weight:900;margin-bottom:8px">Connecting to Game...</div><div style="font-size:16px;color:var(--muted)">Just a moment.</div></div>
 </div>
-
 <script>
-const SECTORS = [
+const SECTORS=[
   {id:"tech",name:"Technology",icon:"💻",beta:1.5,div:0.01,color:"#2563eb",basePE:28,peLow:14,peHigh:42,examples:"Apple, Microsoft, Google",type:"offense",desc:"High growth, high volatility"},
   {id:"health",name:"Healthcare",icon:"🏥",beta:0.8,div:0.015,color:"#059669",basePE:18,peLow:12,peHigh:26,examples:"Johnson & Johnson, Pfizer, UnitedHealth",type:"defense",desc:"Defensive, steady earnings"},
   {id:"energy",name:"Energy",icon:"⚡",beta:1.3,div:0.025,color:"#ea580c",basePE:12,peLow:6,peHigh:22,examples:"ExxonMobil, Chevron, ConocoPhillips",type:"offense",desc:"Commodity-driven, cyclical"},
@@ -306,328 +128,270 @@ const SECTORS = [
   {id:"ind",name:"Industrials",icon:"🏗️",beta:1.1,div:0.015,color:"#78716c",basePE:18,peLow:10,peHigh:28,examples:"Boeing, Caterpillar, 3M, Honeywell",type:"offense",desc:"Infrastructure & manufacturing"},
   {id:"util",name:"Utilities",icon:"💡",beta:0.5,div:0.04,color:"#15803d",basePE:16,peLow:12,peHigh:22,examples:"Duke Energy, NextEra, Southern Company",type:"defense",desc:"Most defensive, highest dividend yield"},
   {id:"mat",name:"Materials",icon:"🪨",beta:1.2,div:0.02,color:"#b45309",basePE:14,peLow:7,peHigh:25,examples:"Dow Chemical, Freeport-McMoRan, Nucor",type:"offense",desc:"Commodity-linked, cyclical"},
-  {id:"tele",name:"Telecom",icon:"📡",beta:0.7,div:0.035,color:"#6366f1",basePE:15,peLow:10,peHigh:22,examples:"Verizon, AT&T, T-Mobile",type:"defense",desc:"Defensive, good dividend yield"},
+  {id:"tele",name:"Telecom",icon:"📡",beta:0.7,div:0.035,color:"#6366f1",basePE:15,peLow:10,peHigh:22,examples:"Verizon, AT&T, T-Mobile",type:"defense",desc:"Defensive, good dividend yield"}
 ];
+const FIREBASE_URL='https://market-game-mini-default-rtdb.firebaseio.com';
+const BUDGET=1000,MAX_SECTORS=3;
+let gameMode='loading',gameStateData=null,playerData=null,oldPortfolio={},cashAlloc=0,allocations={},existingNames=[];
+SECTORS.forEach(s=>allocations[s.id]=0);
+function getSectorTotal(){return Object.values(allocations).reduce((a,b)=>a+b,0)}
+function getTotal(){return cashAlloc+getSectorTotal()}
+function getSectorCount(){return Object.values(allocations).filter(v=>v>0).length}
 
-const BUDGET = 1000;
-const MAX_SECTORS = 3;
-let cashAlloc = 0;
-let allocations = {};
-SECTORS.forEach(s => allocations[s.id] = 0);
-
-function getSectorTotal() { return Object.values(allocations).reduce((a,b) => a+b, 0); }
-function getTotal() { return cashAlloc + getSectorTotal(); }
-function getSectorCount() { return Object.values(allocations).filter(v => v > 0).length; }
-
-function handleCashSlider(value) {
-  const newCash = Number(value);
-  // Can't exceed budget minus what's already in sectors
-  const sectorTotal = getSectorTotal();
-  cashAlloc = Math.min(Math.max(0, newCash), BUDGET - sectorTotal);
-  // Update cash display
-  const pct = (cashAlloc / BUDGET) * 100;
-  document.getElementById('cashAmt').textContent = '$' + cashAlloc;
-  document.getElementById('cashAmt').style.color = cashAlloc > 0 ? '#c5a55a' : '#555';
-  document.getElementById('cashFill').style.width = pct + '%';
-  document.getElementById('cashThumb').style.left = pct + '%';
-  document.getElementById('cashSlider').value = cashAlloc;
-  const sectorBudget = BUDGET - cashAlloc;
-  document.getElementById('cashNote').textContent = cashAlloc > 0
-    ? `🔐 $${cashAlloc} locked in The Vault. $${sectorBudget} left for your 3 sectors.`
-    : "Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.";
-  // Re-render sectors to update max values
-  renderSectors();
-  updateBudgetDisplay();
-  updateRiskMeter();
-}
-
-function updateBudgetDisplay() {
-  const total = getTotal();
-  const remaining = BUDGET - total;
-  const pct = (total / BUDGET) * 100;
-  const color = total === BUDGET ? 'var(--green)' : total > BUDGET ? 'var(--red)' : 'var(--text)';
-  const msgColor = total === BUDGET ? 'var(--green)' : '#b45309';
-  const msg = total === BUDGET ? '✓ Fully invested!' : `$${remaining} remaining`;
-
-  document.getElementById('budgetNum').textContent = '$' + total;
-  document.getElementById('budgetNum').style.color = color;
-  document.getElementById('budgetFill').style.width = Math.min(pct, 100) + '%';
-  document.getElementById('budgetFill').style.background = total === BUDGET ? 'var(--green)' : total > BUDGET ? 'var(--red)' : 'var(--accent)';
-  document.getElementById('budgetMsg').textContent = msg;
-  document.getElementById('budgetMsg').style.color = msgColor;
-
-  // Sector count display
-  const sc = getSectorCount();
-  const scMsg = document.getElementById('sectorCountMsg');
-  if (scMsg) {
-    scMsg.textContent = sc === MAX_SECTORS ? `✓ ${sc} of ${MAX_SECTORS} sectors selected` : `${sc} of ${MAX_SECTORS} selected`;
-    scMsg.style.color = sc === MAX_SECTORS ? 'var(--green)' : 'var(--muted)';
-  }
-
-  const name = document.getElementById('playerName').value.trim();
-  const btn = document.getElementById('submitBtn');
-  const ready = name && total === BUDGET;
-  btn.disabled = !ready;
-  btn.className = 'submit-btn ' + (ready ? 'ready' : 'not-ready');
-  btn.textContent = ready ? '✓ Lock in ' + name + "'s Portfolio" : total === BUDGET ? 'Enter your name above' : 'Invest $' + remaining + ' more';
-}
-
-const RISK_LEVELS = [
-  { name: "Conservative", color: "#1d4ed8", desc: "Low risk — heavy on cash and defensive sectors. Your portfolio prioritizes safety over growth." },
-  { name: "Moderately Conservative", color: "#3b82f6", desc: "Leaning safe — some cash or defensive sectors cushion your portfolio against downturns." },
-  { name: "Moderate", color: "#ca8a04", desc: "Balanced — a mix of offensive and defensive. You'll participate in growth but have some protection." },
-  { name: "Moderately Aggressive", color: "#ea580c", desc: "Growth-leaning — mostly offensive sectors. Big gains in expansion, but you'll feel recessions." },
-  { name: "Aggressive", color: "#dc2626", desc: "High risk — concentrated in high-beta offensive sectors with no cash cushion. Maximum upside, maximum downside." }
-];
-
-function updateRiskMeter() {
-  const total = getTotal();
-  const meter = document.getElementById('riskMeter');
-
-  if (total === 0) {
-    meter.classList.add('empty');
-    document.getElementById('riskLabel').textContent = '—';
-    document.getElementById('riskLabel').style.color = 'var(--muted)';
-    document.getElementById('riskDetail').textContent = 'Allocate your $1,000 to see your risk profile';
-    ['riskBeta','riskCash','riskOff','riskDef','riskDiv'].forEach(id => {
-      document.getElementById(id).textContent = '—';
-      document.getElementById(id).style.color = 'var(--muted)';
-    });
-    document.getElementById('riskPointer').style.left = '50%';
-    return;
-  }
-  meter.classList.remove('empty');
-
-  // Calculate weighted stats (cash has beta=0, div=0.004)
-  let wBeta = 0, wDiv = 0, offAmt = 0, defAmt = 0;
-  // Cash contribution
-  wBeta += 0 * cashAlloc; // beta 0
-  wDiv += 0.004 * cashAlloc; // ~0.4% money market
-  defAmt += cashAlloc; // cash counts as defensive
-
-  Object.entries(allocations).forEach(([sid, amt]) => {
-    if (amt <= 0) return;
-    const s = SECTORS.find(x => x.id === sid);
-    wBeta += s.beta * amt;
-    wDiv += s.div * amt;
-    if (s.type === 'offense') offAmt += amt; else defAmt += amt;
-  });
-  wBeta /= total;
-  wDiv /= total;
-  const cashPct = Math.round((cashAlloc / total) * 100);
-  const offPct = Math.round((offAmt / total) * 100);
-  const defPct = 100 - offPct;
-
-  let riskIdx;
-  if (wBeta < 0.55) riskIdx = 0;
-  else if (wBeta < 0.8) riskIdx = 1;
-  else if (wBeta < 1.05) riskIdx = 2;
-  else if (wBeta < 1.25) riskIdx = 3;
-  else riskIdx = 4;
-
-  const pointerPct = Math.max(2, Math.min(98, (wBeta / 1.5) * 100));
-  const level = RISK_LEVELS[riskIdx];
-
-  document.getElementById('riskPointer').style.left = pointerPct + '%';
-  document.getElementById('riskLabel').textContent = level.name;
-  document.getElementById('riskLabel').style.color = level.color;
-  document.getElementById('riskDetail').textContent = level.desc;
-  document.getElementById('riskBeta').textContent = wBeta.toFixed(2);
-  document.getElementById('riskBeta').style.color = level.color;
-  document.getElementById('riskCash').textContent = cashPct + '%';
-  document.getElementById('riskCash').style.color = cashPct > 0 ? '#059669' : 'var(--muted)';
-  document.getElementById('riskOff').textContent = offPct + '%';
-  document.getElementById('riskOff').style.color = offPct > 50 ? '#ea580c' : '#1d4ed8';
-  document.getElementById('riskDef').textContent = defPct + '%';
-  document.getElementById('riskDef').style.color = defPct > 50 ? '#1d4ed8' : '#ea580c';
-  document.getElementById('riskDiv').textContent = (wDiv * 100).toFixed(1) + '%';
-  document.getElementById('riskDiv').style.color = 'var(--green)';
-}
-
-function handleSlider(sectorId, value) {
-  const newVal = Number(value);
-  const othersTotal = Object.entries(allocations).reduce((sum,[k,v]) => k === sectorId ? sum : sum+v, 0);
-  const maxAvail = BUDGET - cashAlloc - othersTotal;
-  // Enforce 3-sector limit: if this sector is at 0 and we already have 3 sectors, block
-  const curVal = allocations[sectorId] || 0;
-  const sCount = getSectorCount();
-  if (curVal === 0 && newVal > 0 && sCount >= MAX_SECTORS) return;
-
-  allocations[sectorId] = Math.min(Math.max(0, newVal), maxAvail);
-
-  const card = document.getElementById('card-' + sectorId);
-  const sector = SECTORS.find(s => s.id === sectorId);
-  const val = allocations[sectorId];
-  const pct = (val / BUDGET) * 100;
-
-  card.querySelector('.alloc-amount').textContent = '$' + val;
-  card.querySelector('.alloc-amount').style.color = val > 0 ? sector.color : '#d1cdc7';
-  card.querySelector('.alloc-fill').style.width = pct + '%';
-  card.querySelector('.alloc-thumb').style.left = pct + '%';
-  card.querySelector('.alloc-input').value = val;
-  card.classList.toggle('has-alloc', val > 0);
-  card.style.borderColor = val > 0 ? sector.color + '60' : '';
-
-  // Gray out locked sectors
-  const newCount = getSectorCount();
-  SECTORS.forEach(s => {
-    const c = document.getElementById('card-' + s.id);
-    if (c) {
-      const isLocked = allocations[s.id] === 0 && newCount >= MAX_SECTORS;
-      c.style.opacity = isLocked ? '0.4' : '1';
-      const upBtn = c.querySelector('.alloc-input');
-      if (upBtn && isLocked) upBtn.max = '0';
-      else if (upBtn) upBtn.max = '1000';
+// ========== MODE DETECTION ==========
+function detectMode(){
+  fetch(FIREBASE_URL+'/gameState.json').then(r=>r.json()).then(gs=>{
+    if(gs&&gs.rebalanceOpen===true&&gs.players){
+      gameMode='rebalance';gameStateData=gs;renderApp();
+    } else {
+      gameMode='build';
+      fetch(FIREBASE_URL+'/portfolios.json').then(r=>r.json()).then(data=>{
+        if(data) existingNames=Object.values(data).map(d=>d.name?d.name.toLowerCase():'').filter(n=>n);
+        renderApp();
+      }).catch(()=>renderApp());
     }
-  });
+  }).catch(()=>{gameMode='build';renderApp()});
+}
 
+// ========== RENDER ==========
+function renderApp(){
+  const app=document.getElementById('app');
+  if(gameMode==='build'){
+    app.innerHTML=renderBuildMode();document.title='Market Cycle Game — Build Your Portfolio';
+  } else if(gameMode==='rebalance'){
+    app.innerHTML=playerData?renderRebalanceMode():renderRebalanceSelect();document.title='Market Cycle Game — Halftime Rebalance';
+  }
+  // Initialize after DOM update
+  setTimeout(()=>{if(document.getElementById('sectorsGrid')){renderSectors();updateBudgetDisplay();updateRiskMeter();}},10);
+}
+
+// ========== BUILD MODE ==========
+function renderBuildMode(){
+  return '<div style="animation:fadeIn .4s ease">'+
+  '<div class="header"><div class="header-sub">MINI RETREAT 2026</div><h1>🐂 Build Your Portfolio 🐻</h1><p>You have $1,000 to invest. Keep some in cash if you want safety, then pick exactly 3 sectors.</p></div>'+
+  '<div class="name-section"><label>👤 Your Name:</label><input class="name-input" id="playerName" placeholder="Enter your name" oninput="checkDuplicateName()" /><div class="name-warn" id="nameWarn">⚠️ That name is already taken — add your last initial!</div></div>'+
+  renderBudgetBar()+renderCashSection()+renderOffDefSummary()+
+  '<div style="text-align:center;margin-bottom:22px"><h2 style="font-size:32px;font-weight:900">👇 Pick Exactly 3 Sectors</h2><div style="font-size:14px;color:var(--muted);margin-top:4px" id="sectorCountMsg">0 of 3 selected</div></div>'+
+  '<div class="sectors-grid" id="sectorsGrid"></div>'+renderRiskMeter()+
+  '<div class="submit-section"><button class="submit-btn not-ready" id="submitBtn" disabled onclick="submitPortfolio()">Enter your name and invest $1,000</button><div class="submit-msg" id="submitMsg">Drag the sliders above to allocate your $1,000 across sectors.</div></div></div>';
+}
+
+function checkDuplicateName(){
+  const name=document.getElementById('playerName').value.trim(),warn=document.getElementById('nameWarn');
+  if(warn&&name&&existingNames.includes(name.toLowerCase()))warn.style.display='block';
+  else if(warn)warn.style.display='none';
   updateBudgetDisplay();
-  updateRiskMeter();
 }
 
-function buildSpeedoSVG(pe, peLow, peHigh, peColor) {
-  const pePct = Math.max(0, Math.min(100, ((pe - peLow) / (peHigh - peLow)) * 100));
-  const angle = Math.PI - (pePct / 100) * Math.PI;
-  const cx = 100, cy = 100, needleLen = 52;
-  const nx = cx + needleLen * Math.cos(angle);
-  const ny = cy - needleLen * Math.sin(angle);
-  return '<svg viewBox="0 0 200 120" width="200" height="120" style="display:block;margin:0 auto">' +
-    '<path d="M 20 100 A 80 80 0 0 1 53 38" fill="none" stroke="#2d8a4e" stroke-width="16" stroke-linecap="round" opacity="0.55"/>' +
-    '<path d="M 58 33 A 80 80 0 0 1 142 33" fill="none" stroke="#eab308" stroke-width="16" stroke-linecap="round" opacity="0.55"/>' +
-    '<path d="M 147 38 A 80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" opacity="0.55"/>' +
-    '<line x1="' + cx + '" y1="' + cy + '" x2="' + nx.toFixed(1) + '" y2="' + ny.toFixed(1) + '" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/>' +
-    '<circle cx="' + cx + '" cy="' + cy + '" r="4" fill="#1a1a1a"/>' +
-    '<circle cx="' + cx + '" cy="112" r="20" fill="white" stroke="' + peColor + '" stroke-width="2"/>' +
-    '<text x="' + cx + '" y="118" text-anchor="middle" font-family="Playfair Display,Georgia,serif" font-size="22" font-weight="900" fill="' + peColor + '">' + pe + '</text>' +
-    '</svg>';
+// ========== REBALANCE SELECT ==========
+function renderRebalanceSelect(){
+  const players=gameStateData.players?Object.values(gameStateData.players):[];
+  const opts=players.map(p=>'<option value="'+p.name.replace(/"/g,'&quot;')+'">'+p.name+'</option>').join('');
+  return '<div style="animation:fadeIn .4s ease"><div class="header"><div class="round-badge">HALFTIME REBALANCE</div><h1>⚖️ Rebalance Your Portfolio</h1><p>See how you\'re doing, then decide: keep your current portfolio or change your strategy for the second half.</p></div>'+
+  '<div class="name-section"><label>👤 Your Name:</label><select class="name-select" id="playerSelect" onchange="selectPlayer()"><option value="">— Pick your name —</option>'+opts+'</select></div></div>';
 }
 
-function renderSectors() {
-  const grid = document.getElementById('sectorsGrid');
-  const sectorBudget = BUDGET - cashAlloc;
-  const sCount = getSectorCount();
+function selectPlayer(){
+  const name=document.getElementById('playerSelect').value;if(!name)return;
+  const players=gameStateData.players?Object.values(gameStateData.players):[];
+  const pd=players.find(p=>p.name===name);if(!pd){alert('Player not found.');return;}
+  playerData={...pd,indexValue:gameStateData.indexValue,round:gameStateData.round,totalRounds:gameStateData.totalRounds};
+  oldPortfolio={...pd.portfolio};
+  cashAlloc=oldPortfolio.cash||0;
+  SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+  renderApp();
+}
 
-  grid.innerHTML = SECTORS.map(s => {
-    const pe = Math.round(s.basePE * 1.15 * (0.7 + 1.2 * 0.3));
-    const pePct = Math.max(0, Math.min(100, ((pe - s.peLow) / (s.peHigh - s.peLow)) * 100));
-    const peColor = pePct > 70 ? '#ef4444' : pePct > 40 ? '#eab308' : '#16a34a';
-    const betaColor = s.beta > 1.2 ? '#ef4444' : s.beta > 0.9 ? '#eab308' : '#16a34a';
-    const isOff = s.type === 'offense';
-    const val = allocations[s.id] || 0;
-    const isLocked = val === 0 && sCount >= MAX_SECTORS;
+// ========== REBALANCE MODE ==========
+function renderRebalanceMode(){
+  const d=playerData,ret=((d.currentValue-BUDGET)/BUDGET*100).toFixed(1),retColor=d.currentValue>=BUDGET?'var(--green)':'var(--red)',vsIdx=d.currentValue>=d.indexValue;
+  const oldHoldings=Object.entries(oldPortfolio).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  const oldRows=oldHoldings.map(([sid,amt])=>{
+    const s=sid==='cash'?{icon:'🏦',name:'Cash',color:'#c5a55a'}:SECTORS.find(x=>x.id===sid);if(!s)return '';
+    return '<div class="old-row"><span class="old-icon">'+s.icon+'</span><span class="old-name" style="color:'+s.color+'">'+s.name+'</span><div class="old-bar-wrap"><div class="old-bar" style="width:'+((amt/BUDGET)*100)+'%;background:'+s.color+'"></div></div><span class="old-amt">$'+amt+'</span></div>';
+  }).join('');
+  return '<div style="animation:fadeIn .4s ease">'+
+  '<div class="header"><div class="round-badge">HALFTIME REBALANCE — ROUND '+d.round+' OF '+d.totalRounds+'</div><h1>⚖️ '+d.name+'\'s Rebalance</h1><p>Keep your current portfolio or change your strategy for the second half.</p></div>'+
+  '<div class="perf-bar"><div class="perf-stat"><div class="perf-label">Starting Value</div><div class="perf-val">$'+BUDGET+'</div></div><div class="perf-stat"><div class="perf-label">Current Value</div><div class="perf-val" style="color:'+retColor+'">$'+d.currentValue+'</div></div><div class="perf-stat"><div class="perf-label">Return</div><div class="perf-val" style="color:'+retColor+'">'+(ret>0?'+':'')+ret+'%</div></div><div class="perf-stat"><div class="perf-label">Rank</div><div class="perf-val">#'+d.rank+' <span style="font-size:14px;color:var(--muted)">of '+d.totalPlayers+'</span></div></div><div class="perf-stat"><div class="perf-label">vs. Index</div><div class="perf-val" style="color:'+(vsIdx?'var(--green)':'var(--red)')+'">'+(vsIdx?'✓ Beating':'✗ Behind')+'</div></div></div>'+
+  '<div class="old-portfolio"><h3>📋 Your Current Portfolio</h3>'+oldRows+'</div>'+
+  renderBudgetBar()+renderCashSection()+
+  '<div style="text-align:center;margin-bottom:22px"><h2 style="font-size:32px;font-weight:900">👇 Pick Exactly 3 Sectors</h2><div style="font-size:14px;color:var(--muted);margin-top:4px" id="sectorCountMsg"></div></div>'+
+  '<div class="sectors-grid" id="sectorsGrid"></div>'+renderRiskMeter()+
+  '<div class="submit-section"><button class="keep-btn" onclick="keepPortfolio()">🔒 Keep Current Portfolio</button><button class="submit-btn not-ready" id="submitBtn" disabled onclick="submitRebalance()">Adjust your allocation</button><div class="submit-msg" id="submitMsg">Drag the sliders to rebuild your portfolio, or keep your current one.</div></div></div>';
+}
 
-    return '<div class="sector-card ' + s.type + (val > 0 ? ' has-alloc' : '') + '" id="card-' + s.id + '" style="' + (val > 0 ? 'border-color:' + s.color + '60;' : '') + (isLocked ? 'opacity:0.4;' : '') + '">' +
-      '<div class="sector-header">' +
-        '<span class="sector-icon">' + s.icon + '</span>' +
-        '<span class="sector-name" style="color:' + s.color + '">' + s.name + '</span>' +
-        '<span class="sector-badge ' + s.type + '">' + (isOff ? '🏈 Offensive' : '🛡️ Defensive') + '</span>' +
-      '</div>' +
-      '<div class="sector-desc">' + s.desc + '</div>' +
-      '<div class="sector-examples">' + s.examples + '</div>' +
-      '<div class="metrics-row">' +
-        '<div class="metric"><div class="metric-label">β Beta</div><div class="metric-val" style="color:' + betaColor + '">' + s.beta + '</div></div>' +
-        '<div class="metric"><div class="metric-label">🪙 Dividend</div><div class="metric-val" style="color:var(--green)">' + (s.div * 100).toFixed(1) + '%</div></div>' +
-      '</div>' +
-      '<div class="pe-box">' +
-        '<div class="pe-title">📊 PE RATIO — HOW EXPENSIVE IS IT?</div>' +
-        '<div class="speedo-wrap">' + buildSpeedoSVG(pe, s.peLow, s.peHigh, peColor) + '</div>' +
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px;font-weight:600;margin-top:2px">' +
-          '<span style="color:#2d8a4e;text-align:left">Cheap (' + s.peLow + ')</span>' +
-          '<span style="color:#eab308;text-align:center">Fair Value</span>' +
-          '<span style="color:#ef4444;text-align:right">Expensive (' + s.peHigh + ')</span>' +
-        '</div>' +
-      '</div>' +
-      '<div class="alloc-section">' +
-        '<div class="alloc-header">' +
-          '<span class="alloc-label">Your Investment</span>' +
-          '<span class="alloc-amount" style="color:' + (val > 0 ? s.color : '#d1cdc7') + '">$' + val + '</span>' +
-        '</div>' +
-        '<div class="alloc-slider-wrap">' +
-          '<div class="alloc-track"></div>' +
-          '<div class="alloc-fill" style="width:' + ((val/BUDGET)*100) + '%;background:' + s.color + '"></div>' +
-          '<input type="range" class="alloc-input" min="0" max="' + (isLocked ? 0 : 1000) + '" step="50" value="' + val + '" oninput="handleSlider(\'' + s.id + '\', this.value)" />' +
-          '<div class="alloc-thumb" style="left:' + ((val/BUDGET)*100) + '%;background:' + s.color + '"></div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+// ========== SHARED COMPONENTS ==========
+function renderBudgetBar(){
+  return '<div class="budget-bar" id="budgetBar"><div class="budget-left"><span class="budget-num" id="budgetNum">$0</span><span class="budget-of">/ $1,000</span></div><div class="budget-visual"><div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div></div><div class="budget-msg" id="budgetMsg" style="color:#b45309">$1,000 remaining</div></div>';
+}
+
+function renderCashSection(){
+  const prevNote=gameMode==='rebalance'?(oldPortfolio.cash>0?' Previously: $'+oldPortfolio.cash:' You had no cash before.'):'';
+  const vaultSize=gameMode==='rebalance'?100:120;
+  return '<div class="cash-section"><div style="display:flex;align-items:center;gap:24px;position:relative;z-index:1"><div style="flex-shrink:0"><svg viewBox="0 0 140 140" width="'+vaultSize+'" height="'+vaultSize+'"><rect x="5" y="5" width="130" height="130" rx="12" fill="#2a2a2a" stroke="#555" stroke-width="2"/><circle cx="70" cy="70" r="52" fill="#333" stroke="#c5a55a" stroke-width="3"/><circle cx="70" cy="22" r="4" fill="#888"/><circle cx="70" cy="118" r="4" fill="#888"/><circle cx="22" cy="70" r="4" fill="#888"/><circle cx="118" cy="70" r="4" fill="#888"/><circle cx="36" cy="36" r="3" fill="#777"/><circle cx="104" cy="36" r="3" fill="#777"/><circle cx="36" cy="104" r="3" fill="#777"/><circle cx="104" cy="104" r="3" fill="#777"/><circle cx="70" cy="70" r="28" fill="#444" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="44" x2="70" y2="48" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="92" x2="70" y2="96" stroke="#c5a55a" stroke-width="1.5"/><line x1="44" y1="70" x2="48" y2="70" stroke="#c5a55a" stroke-width="1.5"/><line x1="92" y1="70" x2="96" y2="70" stroke="#c5a55a" stroke-width="1.5"/><circle cx="70" cy="70" r="14" fill="#c5a55a"/><circle cx="70" cy="70" r="8" fill="#b8943f"/><circle cx="70" cy="70" r="3" fill="#1a1a1a"/><rect x="108" y="60" width="22" height="6" rx="3" fill="#c5a55a"/><rect x="125" y="50" width="6" height="26" rx="3" fill="#c5a55a"/><rect x="2" y="40" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="60" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="80" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="100" width="8" height="6" rx="2" fill="#888"/></svg></div><div style="flex:1"><div style="font-family:var(--font-d);font-size:'+(gameMode==='rebalance'?24:28)+'px;font-weight:900;color:#c5a55a;margin-bottom:4px">The Vault</div><div style="font-size:'+(gameMode==='rebalance'?13:14)+'px;color:#a8a29e;margin-bottom:'+(gameMode==='rebalance'?10:4)+'px">Cash earns ~0.4% per round — guaranteed, no risk, no surprises. Protected from market crashes.'+prevNote+'</div>'+(gameMode==='build'?'<div style="display:flex;gap:20px;font-size:12px;color:#888;margin-bottom:12px"><span>β Beta: <strong style="color:#c5a55a">0.0</strong></span><span>Return: <strong style="color:#c5a55a">~0.4%/round</strong></span><span>Risk: <strong style="color:#4ade80">None</strong></span></div>':'')+'<div style="display:flex;align-items:center;gap:14px"><span style="font-size:14px;font-weight:700;color:#a8a29e;white-space:nowrap">Lock away:</span><div class="alloc-slider-wrap" style="flex:1"><div class="alloc-track" style="background:#444"></div><div class="alloc-fill" id="cashFill" style="width:'+(cashAlloc/BUDGET*100)+'%;background:#c5a55a"></div><input type="range" class="alloc-input" id="cashSlider" min="0" max="1000" step="50" value="'+cashAlloc+'" oninput="handleCashSlider(this.value)" /><div class="alloc-thumb" id="cashThumb" style="left:'+(cashAlloc/BUDGET*100)+'%;background:#c5a55a"></div></div><span class="alloc-amount" id="cashAmt" style="color:'+(cashAlloc>0?'#c5a55a':'#555')+';font-size:32px">$'+cashAlloc+'</span></div><div style="font-size:12px;color:#888;margin-top:8px;text-align:center" id="cashNote">'+(cashAlloc>0?'🔐 $'+cashAlloc+' locked in The Vault. $'+(BUDGET-cashAlloc)+' left for your 3 sectors.':"Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.")+'</div></div></div></div>';
+}
+
+function renderOffDefSummary(){
+  return '<div class="summary-box"><div class="summary-title"><h3 style="color:var(--text);font-size:22px;margin:0">💡 Offensive vs. Defensive Sectors — Read This First!</h3></div><div class="summary-grid"><div class="summary-half offense-bg"><h4 style="color:#c2410c">🏈 Offensive (Growth)</h4><p>Technology, Consumer Disc., Financials, Energy, Industrials, Materials — these shine when the economy is growing but crash harder in recessions. Higher beta means bigger swings both ways. PEs get expensive when everyone is buying.</p></div><div class="summary-half defense-bg"><h4 style="color:#1d4ed8">🛡️ Defensive (Safety)</h4><p>Consumer Staples, Utilities, Healthcare, Telecom — people need groceries, electricity, medicine, and phone service no matter what the economy does. Lower beta, steadier dividends, and usually cheaper PEs during a boom.</p></div></div></div>';
+}
+
+function renderRiskMeter(){
+  const title=gameMode==='rebalance'?'Your New Risk Appetite':'Your Risk Appetite';
+  const sub=gameMode==='rebalance'?'Compared to your original portfolio':'This updates as you build your portfolio';
+  return '<div class="risk-meter empty" id="riskMeter"><div class="risk-title">📊 '+title+'</div><div class="risk-subtitle">'+sub+'</div><div style="position:relative;margin-bottom:6px"><div class="risk-bar"><div class="risk-segment" style="background:linear-gradient(90deg,#1d4ed8,#3b82f6)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#eab308,#f59e0b)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#f97316,#ea580c)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#ea580c,#dc2626)"></div></div><div class="risk-pointer" id="riskPointer" style="left:50%"><div class="risk-pointer-arrow"></div><div class="risk-pointer-line"></div></div></div><div class="risk-bar-labels"><span style="color:#1d4ed8;text-align:center">Conservative</span><span style="color:#3b82f6;text-align:center">Moderately<br>Conservative</span><span style="color:#ca8a04;text-align:center">Moderate</span><span style="color:#ea580c;text-align:center">Moderately<br>Aggressive</span><span style="color:#dc2626;text-align:center">Aggressive</span></div><div class="risk-result"><div class="risk-result-label" id="riskLabel" style="color:var(--muted)">—</div><div class="risk-result-detail" id="riskDetail">Allocate your $1,000 to see your risk profile</div></div><div class="risk-stats"><div class="risk-stat"><div class="risk-stat-label">Weighted Beta</div><div class="risk-stat-val" id="riskBeta" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Cash %</div><div class="risk-stat-val" id="riskCash" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Offensive %</div><div class="risk-stat-val" id="riskOff" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Defensive %</div><div class="risk-stat-val" id="riskDef" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Avg Dividend</div><div class="risk-stat-val" id="riskDiv" style="color:var(--muted)">—</div></div></div></div>';
+}
+
+// ========== SHARED LOGIC ==========
+function handleCashSlider(v){
+  cashAlloc=Math.min(Math.max(0,Number(v)),BUDGET-getSectorTotal());
+  const pct=(cashAlloc/BUDGET)*100,el=id=>document.getElementById(id);
+  if(el('cashAmt')){el('cashAmt').textContent='$'+cashAlloc;el('cashAmt').style.color=cashAlloc>0?'#c5a55a':'#555'}
+  if(el('cashFill'))el('cashFill').style.width=pct+'%';
+  if(el('cashThumb'))el('cashThumb').style.left=pct+'%';
+  if(el('cashSlider'))el('cashSlider').value=cashAlloc;
+  const sb=BUDGET-cashAlloc;
+  if(el('cashNote'))el('cashNote').textContent=cashAlloc>0?'🔐 $'+cashAlloc+' locked in The Vault. $'+sb+' left for your 3 sectors.':"Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.";
+  renderSectors();updateBudgetDisplay();updateRiskMeter();
+}
+
+function buildSpeedoSVG(pe,peLow,peHigh,peColor){
+  const pePct=Math.max(0,Math.min(100,((pe-peLow)/(peHigh-peLow))*100)),angle=Math.PI-(pePct/100)*Math.PI,cx=100,cy=100,nl=52,nx=cx+nl*Math.cos(angle),ny=cy-nl*Math.sin(angle);
+  return '<svg viewBox="0 0 200 120" width="200" height="120" style="display:block;margin:0 auto"><path d="M 20 100 A 80 80 0 0 1 53 38" fill="none" stroke="#2d8a4e" stroke-width="16" stroke-linecap="round" opacity="0.55"/><path d="M 58 33 A 80 80 0 0 1 142 33" fill="none" stroke="#eab308" stroke-width="16" stroke-linecap="round" opacity="0.55"/><path d="M 147 38 A 80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" opacity="0.55"/><line x1="'+cx+'" y1="'+cy+'" x2="'+nx.toFixed(1)+'" y2="'+ny.toFixed(1)+'" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/><circle cx="'+cx+'" cy="'+cy+'" r="4" fill="#1a1a1a"/><circle cx="'+cx+'" cy="112" r="20" fill="white" stroke="'+peColor+'" stroke-width="2"/><text x="'+cx+'" y="118" text-anchor="middle" font-family="Playfair Display,Georgia,serif" font-size="22" font-weight="900" fill="'+peColor+'">'+pe+'</text></svg>';
+}
+
+function renderSectors(){
+  const grid=document.getElementById('sectorsGrid');if(!grid)return;
+  const sCount=getSectorCount();
+  grid.innerHTML=SECTORS.map(s=>{
+    const pe=Math.round(s.basePE*1.15*(0.7+1.2*0.3)),pePct=Math.max(0,Math.min(100,((pe-s.peLow)/(s.peHigh-s.peLow))*100)),peColor=pePct>70?'#ef4444':pePct>40?'#eab308':'#16a34a',betaColor=s.beta>1.2?'#ef4444':s.beta>.9?'#eab308':'#16a34a',isOff=s.type==='offense';
+    const val=allocations[s.id]||0,isLocked=val===0&&sCount>=MAX_SECTORS;
+    let prevStrip='';
+    if(gameMode==='rebalance'){const ov=oldPortfolio[s.id]||0;if(ov>0){const ch=val!==ov,ci=val>ov?'↑':val<ov?'↓':'',cc=val>ov?'#4ade80':val<ov?'#f87171':'#a8a29e';prevStrip='<div class="prev-strip"><span class="prev-strip-label">Previously</span><span class="prev-strip-val">$'+ov+'</span>'+(ch?'<span class="prev-strip-change" style="color:'+cc+'">'+ci+' $'+Math.abs(val-ov)+'</span>':'')+'</div>';}}
+    return '<div class="sector-card '+s.type+(val>0?' has-alloc':'')+'" id="card-'+s.id+'" style="'+(val>0?'border-color:'+s.color+'60;':'')+(isLocked?'opacity:0.4;':'')+'"><div class="sector-header"><span class="sector-icon">'+s.icon+'</span><span class="sector-name" style="color:'+s.color+'">'+s.name+'</span><span class="sector-badge '+s.type+'">'+(isOff?'🏈 Offensive':'🛡️ Defensive')+'</span></div><div class="sector-desc">'+s.desc+'</div><div class="sector-examples">'+s.examples+'</div><div class="metrics-row"><div class="metric"><div class="metric-label">β Beta</div><div class="metric-val" style="color:'+betaColor+'">'+s.beta+'</div></div><div class="metric"><div class="metric-label">🪙 Dividend</div><div class="metric-val" style="color:var(--green)">'+(s.div*100).toFixed(1)+'%</div></div></div><div class="pe-box"><div class="pe-title">📊 PE RATIO — HOW EXPENSIVE IS IT?</div><div class="speedo-wrap">'+buildSpeedoSVG(pe,s.peLow,s.peHigh,peColor)+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px;font-weight:600;margin-top:2px"><span style="color:#2d8a4e;text-align:left">Cheap ('+s.peLow+')</span><span style="color:#eab308;text-align:center">Fair Value</span><span style="color:#ef4444;text-align:right">Expensive ('+s.peHigh+')</span></div></div>'+prevStrip+'<div class="alloc-section"><div class="alloc-header"><span class="alloc-label">Your Investment</span><span class="alloc-amount" style="color:'+(val>0?s.color:'#d1cdc7')+'">$'+val+'</span></div><div class="alloc-slider-wrap"><div class="alloc-track"></div><div class="alloc-fill" style="width:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div><input type="range" class="alloc-input" min="0" max="'+(isLocked?0:1000)+'" step="50" value="'+val+'" oninput="handleSlider(\''+s.id+'\',this.value)" /><div class="alloc-thumb" style="left:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div></div></div></div>';
   }).join('');
 }
 
-const FIREBASE_URL = 'https://market-game-mini-default-rtdb.firebaseio.com';
-
-function submitPortfolio() {
-  const name = document.getElementById('playerName').value.trim();
-  const total = getTotal();
-  if (!name || total !== BUDGET) return;
-
-  const portfolio = {};
-  if (cashAlloc > 0) portfolio.cash = cashAlloc;
-  Object.entries(allocations).forEach(([sid, amt]) => {
-    if (amt > 0) portfolio[sid] = amt;
-  });
-
-  // Calculate risk stats for DM page
-  let wBeta = 0;
-  if (total > 0) {
-    wBeta += 0 * cashAlloc;
-    Object.entries(allocations).forEach(([sid, amt]) => {
-      if (amt <= 0) return;
-      const s = SECTORS.find(x => x.id === sid);
-      wBeta += s.beta * amt;
-    });
-    wBeta /= total;
-  }
-
-  const data = {
-    name: name,
-    portfolio: portfolio,
-    cash: cashAlloc,
-    weightedBeta: Math.round(wBeta * 100) / 100,
-    timestamp: new Date().toISOString()
-  };
-
-  // Write to Firebase
-  const btn = document.getElementById('submitBtn');
-  btn.textContent = '⏳ Submitting...';
-  btn.disabled = true;
-
-  const safeName = name.replace(/[.#$\/\[\]]/g, '_');
-  fetch(FIREBASE_URL + '/portfolios/' + safeName + '.json', {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  .then(r => {
-    if (!r.ok) throw new Error('Firebase error');
-    return r.json();
-  })
-  .then(() => {
-    btn.textContent = '✅ Portfolio Locked In!';
-    btn.style.background = 'var(--green)';
-    btn.style.color = '#fff';
-
-    const parts = [];
-    if (cashAlloc > 0) parts.push('🏦 Cash: $' + cashAlloc);
-    Object.entries(allocations).forEach(([sid, amt]) => {
-      if (amt > 0) { const s = SECTORS.find(x => x.id === sid); parts.push(s.icon + ' ' + s.name + ': $' + amt); }
-    });
-
-    document.getElementById('submitMsg').innerHTML = '<strong style="color:var(--green)">✓ ' + name + '\'s portfolio is locked in and sent to the Dungeon Master!</strong><br>' + parts.join(' · ');
-  })
-  .catch(err => {
-    console.error('Firebase write failed:', err);
-    btn.textContent = '⚠️ Error — try again';
-    btn.disabled = false;
-    btn.style.background = 'var(--red)';
-    btn.style.color = '#fff';
-    setTimeout(() => { btn.className = 'submit-btn ready'; btn.textContent = '✓ Lock in ' + name + "'s Portfolio"; btn.style.background = ''; btn.style.color = ''; }, 3000);
-  });
+function handleSlider(sid,v){
+  const newVal=Number(v),oT=Object.entries(allocations).reduce((s,[k,val])=>k===sid?s:s+val,0),mx=BUDGET-cashAlloc-oT,curVal=allocations[sid]||0,sC=getSectorCount();
+  if(curVal===0&&newVal>0&&sC>=MAX_SECTORS)return;
+  allocations[sid]=Math.min(Math.max(0,newVal),mx);
+  const card=document.getElementById('card-'+sid),sec=SECTORS.find(s=>s.id===sid),val=allocations[sid],pct=(val/BUDGET)*100;
+  card.querySelector('.alloc-amount').textContent='$'+val;card.querySelector('.alloc-amount').style.color=val>0?sec.color:'#d1cdc7';
+  card.querySelector('.alloc-fill').style.width=pct+'%';card.querySelector('.alloc-thumb').style.left=pct+'%';card.querySelector('.alloc-input').value=val;
+  card.classList.toggle('has-alloc',val>0);card.style.borderColor=val>0?sec.color+'60':'';
+  // Update prev strip change indicator
+  if(gameMode==='rebalance'){const ps=card.querySelector('.prev-strip-change');if(ps){const ov=oldPortfolio[sid]||0;if(val!==ov){ps.style.color=val>ov?'#4ade80':'#f87171';ps.textContent=(val>ov?'↑':'↓')+' $'+Math.abs(val-ov);}else ps.textContent='';}}
+  const nC=getSectorCount();
+  SECTORS.forEach(s=>{const c=document.getElementById('card-'+s.id);if(c){const lk=allocations[s.id]===0&&nC>=MAX_SECTORS;c.style.opacity=lk?'0.4':'1';const inp=c.querySelector('.alloc-input');if(inp)inp.max=lk?'0':'1000';}});
+  updateBudgetDisplay();updateRiskMeter();
 }
 
-document.getElementById('playerName').addEventListener('input', updateBudgetDisplay);
-renderSectors();
-updateBudgetDisplay();
-updateRiskMeter();
+function updateBudgetDisplay(){
+  const total=getTotal(),rem=BUDGET-total,pct=(total/BUDGET)*100;
+  const color=total===BUDGET?'var(--green)':total>BUDGET?'var(--red)':'var(--text)';
+  const msgColor=total===BUDGET?'var(--green)':'#b45309',msg=total===BUDGET?'✓ Fully invested!':'$'+rem+' remaining';
+  const el=id=>document.getElementById(id);
+  if(el('budgetNum')){el('budgetNum').textContent='$'+total;el('budgetNum').style.color=color}
+  if(el('budgetFill')){el('budgetFill').style.width=Math.min(pct,100)+'%';el('budgetFill').style.background=total===BUDGET?'var(--green)':total>BUDGET?'var(--red)':'var(--accent)'}
+  if(el('budgetMsg')){el('budgetMsg').textContent=msg;el('budgetMsg').style.color=msgColor}
+  const sc=getSectorCount(),scMsg=el('sectorCountMsg');
+  if(scMsg){scMsg.textContent=sc===MAX_SECTORS?'✓ '+sc+' of '+MAX_SECTORS+' sectors selected':sc+' of '+MAX_SECTORS+' selected';scMsg.style.color=sc===MAX_SECTORS?'var(--green)':'var(--muted)'}
+  const btn=el('submitBtn');if(!btn)return;
+  if(gameMode==='build'){
+    const name=el('playerName')?el('playerName').value.trim():'';
+    const ready=name&&total===BUDGET;
+    btn.disabled=!ready;btn.className='submit-btn '+(ready?'ready':'not-ready');
+    btn.textContent=ready?'✓ Lock in '+name+"'s Portfolio":total===BUDGET?'Enter your name above':'Invest $'+rem+' more';
+  } else {
+    const ready=playerData&&total===BUDGET;
+    btn.disabled=!ready;btn.className='submit-btn '+(ready?'ready':'not-ready');
+    btn.textContent=ready?'✓ Lock in New Portfolio':total===BUDGET?'Ready!':'Invest $'+rem+' more';
+  }
+}
+
+const RISK_LEVELS=[
+  {name:"Conservative",color:"#1d4ed8",desc:"Low risk — heavy on cash and defensive sectors. Your portfolio prioritizes safety over growth."},
+  {name:"Moderately Conservative",color:"#3b82f6",desc:"Leaning safe — some cash or defensive sectors cushion your portfolio against downturns."},
+  {name:"Moderate",color:"#ca8a04",desc:"Balanced — a mix of offensive and defensive. You'll participate in growth but have some protection."},
+  {name:"Moderately Aggressive",color:"#ea580c",desc:"Growth-leaning — mostly offensive sectors. Big gains in expansion, but you'll feel recessions."},
+  {name:"Aggressive",color:"#dc2626",desc:"High risk — concentrated in high-beta offensive sectors with no cash cushion. Maximum upside, maximum downside."}
+];
+
+function updateRiskMeter(){
+  const total=getTotal(),meter=document.getElementById('riskMeter');if(!meter)return;
+  if(total===0){meter.classList.add('empty');document.getElementById('riskLabel').textContent='—';document.getElementById('riskLabel').style.color='var(--muted)';document.getElementById('riskDetail').textContent='Allocate your $1,000 to see your risk profile';['riskBeta','riskCash','riskOff','riskDef','riskDiv'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).style.color='var(--muted)'});document.getElementById('riskPointer').style.left='50%';return}
+  meter.classList.remove('empty');
+  let wB=0,wD=0,offA=0,defA=0;wD+=0.004*cashAlloc;defA+=cashAlloc;
+  Object.entries(allocations).forEach(([sid,amt])=>{if(amt<=0)return;const s=SECTORS.find(x=>x.id===sid);wB+=s.beta*amt;wD+=s.div*amt;if(s.type==='offense')offA+=amt;else defA+=amt});
+  wB/=total;wD/=total;
+  const cashPct=Math.round((cashAlloc/total)*100),offPct=Math.round((offA/total)*100),defPct=100-offPct;
+  let ri;if(wB<.55)ri=0;else if(wB<.8)ri=1;else if(wB<1.05)ri=2;else if(wB<1.25)ri=3;else ri=4;
+  const pp=Math.max(2,Math.min(98,(wB/1.5)*100)),lev=RISK_LEVELS[ri];
+  document.getElementById('riskPointer').style.left=pp+'%';
+  document.getElementById('riskLabel').textContent=lev.name;document.getElementById('riskLabel').style.color=lev.color;
+  document.getElementById('riskDetail').textContent=lev.desc;
+  document.getElementById('riskBeta').textContent=wB.toFixed(2);document.getElementById('riskBeta').style.color=lev.color;
+  document.getElementById('riskCash').textContent=cashPct+'%';document.getElementById('riskCash').style.color=cashPct>0?'#059669':'var(--muted)';
+  document.getElementById('riskOff').textContent=offPct+'%';document.getElementById('riskOff').style.color=offPct>50?'#ea580c':'#1d4ed8';
+  document.getElementById('riskDef').textContent=defPct+'%';document.getElementById('riskDef').style.color=defPct>50?'#1d4ed8':'#ea580c';
+  document.getElementById('riskDiv').textContent=(wD*100).toFixed(1)+'%';document.getElementById('riskDiv').style.color='var(--green)';
+}
+
+// ========== SUBMIT BUILD ==========
+function submitPortfolio(){
+  const name=document.getElementById('playerName').value.trim(),total=getTotal();
+  if(!name||total!==BUDGET)return;
+  const portfolio={};if(cashAlloc>0)portfolio.cash=cashAlloc;
+  Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0)portfolio[sid]=amt});
+  let wBeta=0;Object.entries(allocations).forEach(([sid,amt])=>{if(amt<=0)return;const s=SECTORS.find(x=>x.id===sid);wBeta+=s.beta*amt});if(total>0)wBeta/=total;
+  const data={name:name,portfolio:portfolio,cash:cashAlloc,weightedBeta:Math.round(wBeta*100)/100,timestamp:new Date().toISOString()};
+  const btn=document.getElementById('submitBtn');btn.textContent='⏳ Submitting...';btn.disabled=true;
+  const safeName=name.replace(/[.#$\/\[\]]/g,'_');
+  fetch(FIREBASE_URL+'/portfolios/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+  .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
+  .then(()=>{
+    btn.textContent='✅ Portfolio Locked In!';btn.style.background='var(--green)';btn.style.color='#fff';
+    const parts=[];if(cashAlloc>0)parts.push('🏦 Cash: $'+cashAlloc);
+    Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0){const s=SECTORS.find(x=>x.id===sid);parts.push(s.icon+' '+s.name+': $'+amt)}});
+    document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ '+name+'\'s portfolio is locked in and sent to the Dungeon Master!</strong><br>'+parts.join(' · ');
+  })
+  .catch(err=>{console.error('Firebase write failed:',err);btn.textContent='⚠️ Error — try again';btn.disabled=false;btn.style.background='var(--red)';btn.style.color='#fff';setTimeout(()=>{btn.className='submit-btn ready';btn.textContent='✓ Lock in '+name+"'s Portfolio";btn.style.background='';btn.style.color=''},3000)});
+}
+
+// ========== SUBMIT REBALANCE ==========
+function keepPortfolio(){
+  const name=playerData.name,safeName=name.replace(/[.#$\/\[\]]/g,'_');
+  const data={name:name,portfolio:{...oldPortfolio},kept:true,timestamp:new Date().toISOString()};
+  const btn=document.querySelector('.keep-btn');btn.textContent='⏳ Saving...';btn.disabled=true;
+  fetch(FIREBASE_URL+'/rebalanced/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+  .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
+  .then(()=>{btn.textContent='✅ Keeping Current Portfolio';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';document.getElementById('submitBtn').style.display='none';document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ Portfolio unchanged — locked in for the second half!</strong>'})
+  .catch(err=>{console.error(err);btn.textContent='⚠️ Error — try again';btn.disabled=false});
+}
+
+function submitRebalance(){
+  const total=getTotal();if(!playerData||total!==BUDGET)return;
+  const name=playerData.name,portfolio={};if(cashAlloc>0)portfolio.cash=cashAlloc;
+  Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0)portfolio[sid]=amt});
+  const safeName=name.replace(/[.#$\/\[\]]/g,'_');
+  const data={name:name,portfolio:portfolio,kept:false,timestamp:new Date().toISOString()};
+  const btn=document.getElementById('submitBtn');btn.textContent='⏳ Submitting...';btn.disabled=true;
+  fetch(FIREBASE_URL+'/rebalanced/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+  .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
+  .then(()=>{
+    btn.textContent='✅ New Portfolio Locked In!';btn.style.background='var(--green)';btn.style.color='#fff';
+    const kb=document.querySelector('.keep-btn');if(kb)kb.style.display='none';
+    const parts=[];if(cashAlloc>0)parts.push('🏦 Cash: $'+cashAlloc);
+    Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0){const s=SECTORS.find(x=>x.id===sid);parts.push(s.icon+' '+s.name+': $'+amt)}});
+    const changes=[];Object.entries(allocations).forEach(([sid,amt])=>{const old=oldPortfolio[sid]||0;if(amt!==old){const s=SECTORS.find(x=>x.id===sid);changes.push(s.icon+' '+s.name+': '+(amt-old>0?'+':'')+'$'+(amt-old))}});
+    const oc=oldPortfolio.cash||0;if(cashAlloc!==oc)changes.push('🏦 Cash: '+(cashAlloc-oc>0?'+':'')+'$'+(cashAlloc-oc));
+    document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ '+name+"'s new portfolio is locked in!</strong><br>"+parts.join(' · ')+(changes.length>0?'<br><span style="font-size:12px;color:var(--muted)">Changes: '+changes.join(', ')+'</span>':'');
+  })
+  .catch(err=>{console.error(err);btn.textContent='⚠️ Error — try again';btn.disabled=false;btn.style.background='var(--red)';btn.style.color='#fff';setTimeout(()=>{btn.className='submit-btn ready';btn.textContent='✓ Lock in New Portfolio';btn.style.background='';btn.style.color=''},3000)});
+}
+
+// ========== INIT ==========
+detectMode();
 </script>
 </body>
 </html>
