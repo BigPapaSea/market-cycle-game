@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Market Cycle Game — DM Control</title>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Sans+3:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#faf9f6;--card:#fff;--border:#e8e5e0;--text:#1a1a1a;--muted:#8a8580;
+  --accent:#c5a55a;--green:#2d8a4e;--red:#c0392b;--blue:#2563eb;
+  --font-d:'Playfair Display',Georgia,serif;--font-b:'Source Sans 3',sans-serif;--font-m:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);min-height:100vh}
+h1,h2,h3{font-family:var(--font-d)}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes recPulse{0%,100%{background:linear-gradient(180deg,#1a0000,#0f0000)}50%{background:linear-gradient(180deg,#2a0505,#1a0202)}}
+@keyframes expGlow{0%,100%{background:linear-gradient(180deg,#071a0e,#050f07)}50%{background:linear-gradient(180deg,#0a2614,#07180b)}}
+@keyframes newspaperDrop{from{opacity:0;transform:translateY(-40px) rotateX(15deg)}to{opacity:1;transform:translateY(0) rotateX(0)}}
+@keyframes stampIn{0%{transform:scale(3) rotate(-12deg);opacity:0}60%{transform:scale(1) rotate(-12deg);opacity:1}100%{transform:scale(1) rotate(-12deg);opacity:1}}
+@keyframes scoreUp{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+
+.container{max-width:1200px;margin:0 auto;padding:28px 24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,0.03)}
+.btn{font-family:var(--font-b);border:none;border-radius:10px;padding:12px 28px;font-weight:700;font-size:15px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-primary{background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:var(--accent)}
+.btn-gold{background:linear-gradient(135deg,#c5a55a,#b8943f);color:#1a1a1a}
+.btn-green{background:linear-gradient(135deg,var(--green),#228b3b);color:#fff}
+.btn-red{background:linear-gradient(135deg,var(--red),#a93226);color:#fff}
+.btn-outline{background:#fff;border:2px solid var(--border);color:var(--muted)}
+.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;background:#f0eeeb;border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{flex:1;text-align:center;padding:10px 14px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;transition:.15s;border:none;background:transparent;font-family:var(--font-b);color:var(--muted)}
+.tab.active{background:#fff;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* Allocation */
+.alloc-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:6px;border:1px solid transparent;transition:.15s}
+.alloc-row:hover{background:#fafaf8}
+.alloc-icon{font-size:22px;width:32px;text-align:center}
+.alloc-name{font-weight:700;font-size:13px;min-width:110px}
+.alloc-bar-wrap{flex:1;height:10px;background:#f0eeeb;border-radius:6px;overflow:hidden}
+.alloc-bar{height:100%;border-radius:6px;transition:width .2s}
+.alloc-amt{font-family:var(--font-m);font-weight:700;font-size:15px;min-width:45px;text-align:right}
+.alloc-btn{width:34px;height:34px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.1s;color:var(--text)}
+.alloc-btn:hover{background:#f5f5f0;border-color:var(--text)}
+.alloc-btn:disabled{opacity:.2;cursor:not-allowed}
+
+/* Newspaper */
+.newspaper{background:#fffff5;border:3px solid #1a1a1a;border-radius:4px;padding:36px 44px;text-align:center;position:relative;overflow:hidden;animation:newspaperDrop .6s ease}
+.newspaper-mast{font-family:var(--font-d);font-size:12px;letter-spacing:6px;text-transform:uppercase;color:var(--muted);border-bottom:2px solid #1a1a1a;padding-bottom:8px;margin-bottom:16px}
+.newspaper-hl{font-family:var(--font-d);font-size:42px;font-weight:900;line-height:1.12;margin-bottom:14px;color:#1a1a1a}
+.newspaper-sub{font-size:18px;color:#555;font-style:italic;line-height:1.4;margin-bottom:10px}
+.newspaper-year{font-family:var(--font-m);font-size:13px;color:var(--muted);letter-spacing:2px}
+.newspaper-stamp{position:absolute;top:16px;right:20px;font-family:var(--font-m);font-weight:700;font-size:28px;padding:8px 22px;border:4px solid;border-radius:6px;transform:rotate(-12deg);animation:stampIn .4s ease .8s both}
+
+/* Return breakdown */
+.ret-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.ret-card{padding:16px 18px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);overflow:hidden}
+.ret-card-hdr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.ret-total{font-family:var(--font-m);font-weight:800;font-size:22px;white-space:nowrap}
+
+/* Leaderboard */
+.lb-row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:12px;margin-bottom:6px;transition:.2s}
+.lb-row:hover{background:#fafaf8}
+.lb-rank{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;flex-shrink:0}
+.lb-name{flex:1;font-weight:700;font-size:17px}
+.lb-val{font-family:var(--font-m);font-weight:800;font-size:22px}
+.lb-change{font-family:var(--font-m);font-size:12px;font-weight:600;margin-left:8px}
+
+/* Commentary */
+.commentary{background:#1a1a1a;color:#e8e5e0;border-radius:14px;padding:22px 26px;font-size:16px;line-height:1.65;position:relative}
+.commentary::before{content:'📢';position:absolute;top:-14px;left:22px;font-size:26px}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--font-m);font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:2px solid var(--border)}
+td{padding:10px;border-bottom:1px solid #f0eeeb;font-size:14px}
+
+/* Round screen */
+.round-screen{min-height:100vh;padding:28px 24px;transition:background .6s}
+.round-screen.bull{animation:expGlow 3s infinite}
+.round-screen.bear{animation:recPulse 3s infinite}
+
+/* Phase badge */
+.phase-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:700}
+
+@media(min-width:1200px){
+  .container{max-width:1200px;padding:32px}
+  .newspaper-hl{font-size:48px}
+  .lb-val{font-size:26px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ===================== FIREBASE CONFIG =====================
+// INSTRUCTIONS: Replace the values below with your Firebase project config
+// 1. Go to firebase.google.com → your project → Project Settings → General
+// 2. Scroll to "Your apps" → click </> (web) → copy the config
+const FIREBASE_CONFIG = {
+  databaseURL: "https://market-game-mini-default-rtdb.firebaseio.com"
+};
+let fbDB = null;
+let fbConnected = false;
+try {
+  if (FIREBASE_CONFIG.databaseURL !== "YOUR_DATABASE_URL_HERE") {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDB = firebase.database();
+    fbConnected = true;
+  }
+} catch(e) { console.log('Firebase not configured yet:', e.message); }
+
+function loadPortfoliosFromFirebase() {
+  if (!fbConnected) { alert('Firebase not configured. Edit the FIREBASE_CONFIG in dm.html.'); return; }
+  const statusEl = document.getElementById('fbStatus');
+  if (statusEl) statusEl.textContent = 'Loading...';
+  fbDB.ref('portfolios').once('value').then(snap => {
+    const data = snap.val();
+    if (!data) { if (statusEl) statusEl.textContent = 'No portfolios found. Have kids submit first.'; return; }
+    const loaded = [];
+    Object.entries(data).forEach(([key, val]) => {
+      if (val.name && val.portfolio) {
+        const port = {};
+        Object.entries(val.portfolio).forEach(([sid, amt]) => { port[sid] = Number(amt); });
+        // Skip if this player already exists
+        if (!S.players.find(p => p.name === val.name)) {
+          loaded.push({ name: val.name, portfolio: {...port}, initialPortfolio: {...port}, history: [BUDGET] });
+        }
+      }
+    });
+    S.players = [...S.players, ...loaded];
+    if (statusEl) statusEl.textContent = loaded.length > 0 ? '✓ Loaded ' + loaded.length + ' portfolios!' : 'No new portfolios to load.';
+    playReveal();
+    render();
+  }).catch(err => {
+    if (statusEl) statusEl.textContent = 'Error: ' + err.message;
+  });
+}
+
+function clearFirebasePortfolios() {
+  if (!fbConnected) return;
+  if (confirm('Clear all submitted portfolios from Firebase? Kids will need to re-submit.')) {
+    fbDB.ref('portfolios').remove().then(() => { alert('Cleared.'); }).catch(err => alert('Error: ' + err.message));
+  }
+}
+
+// ===================== DATA =====================
+const SECTORS=[
+  {id:"tech",name:"Technology",icon:"💻",beta:1.5,div:0.01,color:"#2563eb",basePE:28,peLow:14,peHigh:42,examples:"Apple, Microsoft, Google",type:"offensive",desc:"High growth, high volatility"},
+  {id:"health",name:"Healthcare",icon:"🏥",beta:0.8,div:0.015,color:"#059669",basePE:18,peLow:12,peHigh:26,examples:"Johnson & Johnson, Pfizer, UnitedHealth",type:"defensive",desc:"Defensive, steady earnings"},
+  {id:"energy",name:"Energy",icon:"⚡",beta:1.3,div:0.025,color:"#ea580c",basePE:12,peLow:6,peHigh:22,examples:"ExxonMobil, Chevron, ConocoPhillips",type:"offensive",desc:"Commodity-driven, cyclical"},
+  {id:"fin",name:"Financials",icon:"🏦",beta:1.2,div:0.02,color:"#7c3aed",basePE:14,peLow:8,peHigh:24,examples:"JPMorgan, Goldman Sachs, Bank of America",type:"offensive",desc:"Rate sensitive, moderate growth"},
+  {id:"staples",name:"Consumer Staples",icon:"🛒",beta:0.65,div:0.025,color:"#0891b2",basePE:22,peLow:16,peHigh:30,examples:"Procter & Gamble, Coca-Cola, Walmart",type:"defensive",desc:"Defensive, reliable dividends"},
+  {id:"disc",name:"Consumer Disc.",icon:"🛍️",beta:1.4,div:0.01,color:"#e11d48",basePE:20,peLow:10,peHigh:34,examples:"Amazon, Nike, Starbucks, Tesla",type:"offensive",desc:"Spending-driven, cyclical"},
+  {id:"ind",name:"Industrials",icon:"🏗️",beta:1.1,div:0.015,color:"#78716c",basePE:18,peLow:10,peHigh:28,examples:"Boeing, Caterpillar, 3M, Honeywell",type:"offensive",desc:"Infrastructure & manufacturing"},
+  {id:"util",name:"Utilities",icon:"💡",beta:0.5,div:0.04,color:"#15803d",basePE:16,peLow:12,peHigh:22,examples:"Duke Energy, NextEra, Southern Company",type:"defensive",desc:"Most defensive, highest dividend yield"},
+  {id:"mat",name:"Materials",icon:"🪨",beta:1.2,div:0.02,color:"#b45309",basePE:14,peLow:7,peHigh:25,examples:"Dow Chemical, Freeport-McMoRan, Nucor",type:"offensive",desc:"Commodity-linked, cyclical"},
+  {id:"tele",name:"Telecom",icon:"📡",beta:0.7,div:0.035,color:"#6366f1",basePE:15,peLow:10,peHigh:22,examples:"Verizon, AT&T, T-Mobile",type:"defensive",desc:"Defensive, good dividend yield"}
+];
+
+const PHASES=[
+  {id:"expansion",name:"Expansion",icon:"🚀",color:"#16a34a",mood:"bull",ret:0.12},
+  {id:"peak",name:"Peak",icon:"⛰️",color:"#eab308",mood:"bull",ret:0.04},
+  {id:"minor_recession",name:"Minor Recession",icon:"📉",color:"#f97316",mood:"bear",ret:-0.06},
+  {id:"major_recession",name:"Major Recession",icon:"💥",color:"#dc2626",mood:"bear",ret:-0.15},
+  {id:"trough",name:"Trough",icon:"🕳️",color:"#7f1d1d",mood:"bear",ret:-0.08},
+  {id:"early_recovery",name:"Early Recovery",icon:"🌱",color:"#65a30d",mood:"bull",ret:0.08},
+  {id:"minor_expansion",name:"Minor Expansion",icon:"📈",color:"#22c55e",mood:"bull",ret:0.06}
+];
+
+const MULTS={
+  expansion:{tech:1.6,health:0.7,energy:1.3,fin:1.4,staples:0.5,disc:1.5,ind:1.3,mat:1.4,util:0.4,tele:0.5},
+  peak:{tech:1.2,health:0.9,energy:1.0,fin:1.0,staples:0.8,disc:0.9,ind:0.9,mat:0.8,util:0.7,tele:0.8},
+  minor_recession:{tech:1.2,health:0.6,energy:1.3,fin:1.4,staples:0.5,disc:1.3,ind:1.2,mat:1.3,util:0.4,tele:0.5},
+  major_recession:{tech:1.4,health:0.5,energy:1.5,fin:1.6,staples:0.3,disc:1.5,ind:1.4,mat:1.6,util:0.3,tele:0.4},
+  trough:{tech:1.3,health:0.6,energy:1.2,fin:1.3,staples:0.4,disc:1.2,ind:1.1,mat:1.2,util:0.4,tele:0.5},
+  early_recovery:{tech:1.4,health:0.8,energy:1.1,fin:1.2,staples:0.6,disc:1.3,ind:1.2,mat:1.3,util:0.5,tele:0.6},
+  minor_expansion:{tech:1.3,health:0.8,energy:1.1,fin:1.1,staples:0.6,disc:1.2,ind:1.1,mat:1.1,util:0.5,tele:0.6}
+};
+
+const NEWS = [
+  {headline:"TECH GIANTS SHATTER EARNINGS RECORDS",sub:"Capital floods into tech; healthcare budgets squeezed",year:"2024",paper:"WALL STREET JOURNAL",phases:["expansion","minor_expansion"],
+    effects:{tech:0.06,disc:0.03,health:-0.03},
+    reasons:{tech:"Record profits attract investors — capital pours into the sector",disc:"Tech spending spills over to online retail platforms",health:"Investment dollars shift away from healthcare into faster-growing tech"}},
+  {headline:"HOUSING STARTS REACH 15-YEAR HIGH",sub:"Construction booms; lumber costs spike; healthcare budgets squeezed",year:"2021",paper:"BLOOMBERG",phases:["expansion"],
+    effects:{mat:0.05,ind:0.04,health:-0.02},
+    reasons:{mat:"Lumber, steel, and concrete demand surges for new homes",ind:"Builders and heavy equipment makers hire aggressively",health:"Healthcare budgets squeezed as consumers redirect spending to housing"}},
+  {headline:"OIL SOARS TO $120 AS TENSIONS RISE",sub:"Energy stocks surge; transport and retail take a hit",year:"2022",paper:"REUTERS",phases:["expansion","peak"],
+    effects:{energy:0.07,ind:-0.04,tele:-0.03},
+    reasons:{energy:"Oil producers earn massive profits at $120/barrel",ind:"Fuel costs spike for trucking, shipping, and factories",tele:"Cell tower and data center operations face surging energy bills"}},
+  {headline:"FED SIGNALS RATE HIKES — WALL STREET BRACES",sub:"Banks profit from higher rates; growth stocks sell off",year:"2022",paper:"FINANCIAL TIMES",phases:["peak"],
+    effects:{fin:0.05,tech:-0.06,disc:-0.04},
+    reasons:{fin:"Banks earn more on every loan when interest rates rise",tech:"Higher rates crush valuations of companies whose profits are years away",disc:"Borrowing costs rise — consumers take fewer loans for big purchases"}},
+  {headline:"CAR SALES PLUMMET AS CONSUMERS PULL BACK",sub:"Dealerships empty; banks tighten auto lending",year:"2019",paper:"DETROIT FREE PRESS",phases:["peak","minor_recession"],
+    effects:{disc:-0.04,fin:-0.03,health:0.02},
+    reasons:{disc:"Auto dealers see empty lots — consumers stop making big purchases",fin:"Banks tighten auto lending as the risk of defaults rises",health:"Nervous investors rotate into defensive healthcare stocks"}},
+  {headline:"TRADE WAR ESCALATES — TARIFFS HIT 25%",sub:"Import costs spike; domestic staples benefit from protection",year:"2019",paper:"THE ECONOMIST",phases:["minor_recession"],
+    effects:{ind:-0.05,mat:-0.04,staples:0.03},
+    reasons:{ind:"Tariffs disrupt global supply chains for manufacturers",mat:"Export restrictions hit commodity producers who sell overseas",staples:"Domestic food and household brands benefit from tariff protection"}},
+  {headline:"PANDEMIC SHUTS DOWN GLOBAL ECONOMY",sub:"Travel and retail crushed; remote work booms",year:"2020",paper:"NEW YORK TIMES",phases:["minor_recession","major_recession"],
+    effects:{disc:-0.06,energy:-0.06,tech:0.05},
+    reasons:{disc:"Stores close, travel halts — consumers can't spend on anything fun",energy:"Nobody is driving or flying — oil demand collapses worldwide",tech:"Remote work drives explosive demand for laptops, cloud, and Zoom"}},
+  {headline:"BANKS COLLAPSE — MORTGAGE CRISIS SPREADS",sub:"Credit markets freeze; utilities hold steady",year:"2008",paper:"WALL STREET JOURNAL",phases:["major_recession"],
+    effects:{fin:-0.08,ind:-0.03,util:0.03},
+    reasons:{fin:"Banks fail as mortgage-backed securities become worthless",ind:"Construction halts as banks stop lending to builders",util:"Regulated utilities with steady income become safe havens"}},
+  {headline:"MARKETS CRASH 20% IN SINGLE WEEK",sub:"Panic selling; only essentials survive",year:"2020",paper:"CNBC",phases:["major_recession"],
+    effects:{tech:-0.05,fin:-0.04,staples:0.04},
+    reasons:{tech:"High-flying tech stocks fall the furthest in panic selling",fin:"Banks face margin calls and worry about which firms will survive",staples:"Grocery stores and household goods are recession-proof"}},
+  {headline:"OIL PRICES GO NEGATIVE FOR FIRST TIME",sub:"Storage full; producers devastated; renewables look cheap",year:"2020",paper:"BLOOMBERG",phases:["major_recession","trough"],
+    effects:{energy:-0.10,mat:-0.03,util:0.04},
+    reasons:{energy:"Storage tanks are full — producers literally pay people to take their oil",mat:"The entire commodity complex collapses alongside oil prices",util:"Cheap energy benefits utilities — and investors flock to safety"}},
+  {headline:"UNEMPLOYMENT HITS 10% — BREADLINES RETURN",sub:"Spending collapses; only groceries and phone bills get paid",year:"2009",paper:"ASSOCIATED PRESS",phases:["trough"],
+    effects:{disc:-0.04,ind:-0.03,tele:0.03},
+    reasons:{disc:"Unemployed people eliminate all non-essential spending",ind:"Factories and construction sites lay off workers en masse",tele:"Phone and internet bills are among the last payments people skip"}},
+  {headline:"GOVERNMENT PASSES $2 TRILLION STIMULUS",sub:"Markets rally; inflation hawks warn of overheating",year:"2020",paper:"WASHINGTON POST",phases:["trough","early_recovery"],
+    effects:{disc:0.05,ind:0.04,util:-0.03},
+    reasons:{disc:"Stimulus checks hit bank accounts — consumers go on a spending spree",ind:"Government contracts and infrastructure spending pour in",util:"Investors leave boring safe havens for higher-growth recovery plays"}},
+  {headline:"VACCINE APPROVED — MARKETS SOAR",sub:"Travel rebounds; safe havens sell off",year:"2020",paper:"NEW YORK TIMES",phases:["early_recovery"],
+    effects:{disc:0.06,energy:0.04,util:-0.02},
+    reasons:{disc:"Reopening drives revenge spending — travel, dining, and shopping surge",energy:"People start driving and flying again — oil demand rebounds",util:"Investors dump safe-haven utilities for exciting reopening stocks"}},
+  {headline:"INFRASTRUCTURE BILL SIGNED — $1.2 TRILLION",sub:"Roads, bridges, broadband; tech left out",year:"2021",paper:"POLITICO",phases:["early_recovery","minor_expansion"],
+    effects:{ind:0.06,mat:0.05,tech:-0.02},
+    reasons:{ind:"Construction companies win massive government contracts for roads and bridges",mat:"Steel, concrete, and building materials face huge new demand",tech:"Tech companies were left out of the spending — bad lobbying"}},
+  {headline:"CRYPTO HITS ALL-TIME HIGH",sub:"Speculative frenzy; safe stocks lose appeal",year:"2021",paper:"COINDESK",phases:["expansion"],
+    effects:{tech:0.04,fin:0.03,staples:-0.03},
+    reasons:{tech:"Crypto exchanges and blockchain companies ride the speculative wave",fin:"Trading desks and banks profit from crypto transaction fees",staples:"Boring grocery stocks lose appeal when crypto doubles overnight"}},
+  {headline:"DRUG PRICING REFORM CRUSHES PHARMA",sub:"Government caps drug prices; consumer staples rally",year:"2023",paper:"POLITICO",phases:["minor_recession"],
+    effects:{health:-0.05,staples:0.03,disc:0.02},
+    reasons:{health:"Government caps drug prices — pharmaceutical profit margins collapse",staples:"Lower drug costs give consumers more money for groceries and basics",disc:"Savings on medicine redirect to discretionary shopping and dining"}},
+  {headline:"ELECTRIC VEHICLE SALES DOUBLE",sub:"Battery metals boom; oil faces existential threat",year:"2023",paper:"MOTOR TREND",phases:["expansion","peak"],
+    effects:{mat:0.05,energy:-0.05,tech:0.02},
+    reasons:{mat:"Lithium, cobalt, and battery metals mining booms",energy:"Oil companies face an existential threat as cars go electric",tech:"EV software, chips, and self-driving technology companies benefit"}},
+  {headline:"CHIP SHORTAGE ENDS — FACTORIES ROAR",sub:"Tech and auto celebrate; energy demand softens",year:"2023",paper:"FINANCIAL TIMES",phases:["minor_expansion"],
+    effects:{tech:0.04,ind:0.03,energy:-0.03},
+    reasons:{tech:"Chip makers ramp production — device manufacturers celebrate",ind:"Manufacturing lines run at full capacity with steady chip supply",energy:"More efficient chips reduce industrial energy consumption"}},
+  {headline:"GREEN ENERGY INVESTMENT HITS RECORD",sub:"Solar undercuts fossil fuels; oil loses investors",year:"2023",paper:"THE GUARDIAN",phases:["minor_expansion","expansion"],
+    effects:{util:0.05,mat:0.04,energy:-0.05},
+    reasons:{util:"Solar and wind power utilities attract record investment",mat:"Copper, silicon, and rare earth metals surge on renewable demand",energy:"Fossil fuel companies lose investors to clean energy alternatives"}},
+  {headline:"HOUSING PRICES UP 40% — CRISIS",sub:"Banks profit; consumers stretched to breaking point",year:"2022",paper:"ZILLOW REPORT",phases:["peak"],
+    effects:{fin:0.04,disc:-0.04,health:-0.02},
+    reasons:{fin:"Banks profit from soaring home values and a refinancing boom",disc:"Consumers so stretched by housing costs they cut everything else",health:"Healthcare spending squeezed as mortgage payments dominate budgets"}},
+  {headline:"MAJOR CYBERATTACK DISRUPTS PIPELINE",sub:"Gas prices spike; cybersecurity rallies",year:"2021",paper:"CNN",phases:["minor_recession"],
+    effects:{energy:0.06,tech:0.04,ind:-0.04},
+    reasons:{energy:"Pipeline shutdown spikes gas prices — energy stocks surge",tech:"Cybersecurity companies see a massive surge in demand overnight",ind:"Supply chain disruption halts factories waiting for fuel deliveries"}},
+  {headline:"WAR IN EUROPE — MARKETS PLUNGE",sub:"Energy spikes; consumer confidence collapses",year:"2022",paper:"BBC NEWS",phases:["major_recession"],
+    effects:{energy:0.07,disc:-0.05,fin:-0.04},
+    reasons:{energy:"Global oil and gas prices spike on supply disruption fears",disc:"Consumer confidence collapses — nobody shops during a war scare",fin:"European bank exposure creates contagion fears worldwide"}},
+  {headline:"HEALTHCARE STAFFING CRISIS DEEPENS",sub:"Nurse shortages; telehealth booms",year:"2022",paper:"REUTERS",phases:["early_recovery"],
+    effects:{health:-0.03,tele:0.03,staples:0.02},
+    reasons:{health:"Nurse shortages drive labor costs up — hospital profits collapse",tele:"Telehealth platforms boom as in-person care becomes harder to find",staples:"Defensive positioning as healthcare uncertainty makes investors nervous"}},
+  {headline:"GOVERNMENT FAILS TO PASS BUDGET",sub:"Shutdown fears rattle markets; safe havens rally",year:"2023",paper:"POLITICO",phases:["minor_expansion"],
+    effects:{ind:-0.04,mat:-0.03,util:0.03},
+    reasons:{ind:"Government contracts frozen — infrastructure projects stall overnight",mat:"Public construction projects halted without Congressional funding",util:"Regulated utilities are unaffected — investors seek their stability"}},
+  {headline:"AI REVOLUTION TRANSFORMS INDUSTRY",sub:"Automation fears hit labor-heavy sectors",year:"2024",paper:"WIRED",phases:["expansion"],
+    effects:{tech:0.06,health:0.03,ind:-0.04},
+    reasons:{tech:"AI chip makers and software companies see explosive demand",health:"AI discovers new drugs faster and cuts diagnostic costs",ind:"Automation threatens to replace factory and warehouse workers"}},
+  {headline:"CONSUMER CONFIDENCE HITS ROCK BOTTOM",sub:"Savings gone; only essentials survive",year:"2008",paper:"GALLUP",phases:["trough"],
+    effects:{disc:-0.04,fin:-0.02,staples:0.03},
+    reasons:{disc:"Consumers stop buying anything beyond absolute necessities",fin:"Loan defaults spike as people lose faith in the economy",staples:"Groceries and household goods are the last things people stop buying"}},
+  {headline:"RETAIL SALES SURGE — REVENGE SPENDING",sub:"Consumers splurge; safe stocks sell off",year:"2021",paper:"BLOOMBERG",phases:["early_recovery","minor_expansion"],
+    effects:{disc:0.06,fin:0.03,staples:-0.03},
+    reasons:{disc:"Pent-up demand explodes — consumers splurge on clothes, travel, and dining",fin:"Credit card spending surges — banks earn record transaction fees",staples:"Consumers upgrade from generic basics to premium brands and experiences"}},
+  {headline:"INFLATION HITS 9% — WORST IN 40 YEARS",sub:"Commodities win; growth loses",year:"2022",paper:"BUREAU OF LABOR STATISTICS",phases:["peak","minor_recession"],
+    effects:{energy:0.05,tech:-0.05,tele:-0.04},
+    reasons:{energy:"Oil and commodity companies benefit directly from rising prices",tech:"Sky-high interest rates to fight inflation crush growth stock valuations",tele:"Telecom can\'t raise phone bills fast enough to keep up with inflation"}}
+];
+
+const BULL_SCENES=[
+  {title:"ARM WRESTLING",bull:"🐂💪",bear:"🐻😰",bullWin:"The bull SLAMS the bear's paw down!",bearWin:"The bear overpowers the bull!"},
+  {title:"POKER SHOWDOWN",bull:"🐂🃏",bear:"🐻🃏",bullWin:"Royal flush! The bull rakes in the chips!",bearWin:"Four aces — the bear takes the pot!"},
+  {title:"TIKTOK DANCE-OFF",bull:"🐂💃",bear:"🐻🕺",bullWin:"The bull goes VIRAL! 10M views!",bearWin:"The bear's breakdance wins the crowd!"},
+  {title:"LEMONADE STAND",bull:"🐂🍋",bear:"🐻🍋",bullWin:"Line around the block for the bull!",bearWin:"Bear's secret recipe steals customers!"},
+  {title:"PIE EATING CONTEST",bull:"🐂🥧",bear:"🐻🥧",bullWin:"12 pies — new record for the bull!",bearWin:"15 pies! The bear still wants more!"},
+  {title:"SPELLING BEE",bull:"🐂📝",bear:"🐻📝",bullWin:"E-X-P-A-N-S-I-O-N! The bull nails it!",bearWin:"R-E-C-E-S-S-I-O-N! The bear wins!"},
+  {title:"BASKETBALL FINALS",bull:"🐂🏀",bear:"🐻🏀",bullWin:"BUZZER BEATER! Bull drains a three!",bearWin:"The bear blocks at the buzzer!"},
+  {title:"CHESS MATCH",bull:"🐂♟️",bear:"🐻♟️",bullWin:"Checkmate! Bull outmaneuvers the bear!",bearWin:"Bear sacrifices queen for checkmate!"},
+  {title:"KARAOKE NIGHT",bull:"🐂🎤",bear:"🐻🎤",bullWin:"Standing ovation for the bull!",bearWin:"Bear's power ballad makes everyone cry!"}
+];
+
+const DEFAULT_CYCLE=["expansion","peak","minor_recession","major_recession","trough","early_recovery","minor_expansion","minor_recession","peak"];
+const BUDGET=1000;const DIV_INFLATE=1.5;const MAX_SECTORS=3;const MGMT_FEE=0.005;const CASH_RATE=0.004;
+const FIREBASE_URL='https://market-game-mini-default-rtdb.firebaseio.com';
+
+// ===================== SOUND =====================
+let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+function playTone(f,d,t){initAudio();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t||'sine';o.frequency.value=f;g.gain.setValueAtTime(.12,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d)}
+function playBullWin(){[523,659,784].forEach((f,i)=>setTimeout(()=>playTone(f,.3,'triangle'),i*120))}
+function playBearWin(){[392,330,262].forEach((f,i)=>setTimeout(()=>playTone(f,.4,'sawtooth'),i*150))}
+function playReveal(){playTone(880,.15);setTimeout(()=>playTone(1108,.2),100)}
+function playClick(){playTone(1200,.05,'square')}
+
+// ===================== LOGIC =====================
+function genMag(){return .5+(Math.random()+Math.random())/2}
+function getNews(phase,used){const all=NEWS.map((e,i)=>({...e,idx:i}));let pool=all.filter(e=>e.phases.includes(phase)&&!used.has(e.idx));if(!pool.length)pool=all.filter(e=>e.phases.includes(phase));return pool[Math.floor(Math.random()*pool.length)]}
+function calcReturns(phase,news,mag){const cp=PHASES.find(c=>c.id===phase),m=MULTS[phase],ret={};SECTORS.forEach(s=>{const base=cp.ret*m[s.id]*mag,ne=(news.effects[s.id]||0)*mag,div=s.div*DIV_INFLATE/2;ret[s.id]={base,news:ne,dividend:div,total:base+ne+div}});return ret}
+function portReturn(port,ret){let tw=0,wr=0;Object.entries(port).forEach(([sid,amt])=>{if(amt>0){tw+=amt;if(sid==='cash'){wr+=amt*CASH_RATE}else if(ret[sid]){wr+=amt*ret[sid].total}}});return tw>0?wr/tw:0}
+function getPE(sid,phase){const s=SECTORS.find(x=>x.id===sid),cp=PHASES.find(c=>c.id===phase),m=MULTS[phase]?.[sid]||1;let adj=s.basePE;if(cp.mood==='bull')adj=s.basePE*(1+(m-1)*.5);else adj=s.basePE*(1-(m-1)*.3);return Math.max(5,Math.round(adj))}
+
+function genCommentary(players,ret,idxR,phase){
+  const lines=[],cp=PHASES.find(c=>c.id===phase);
+  const sorted=[...players].sort((a,b)=>portReturn(b.portfolio,ret)-portReturn(a.portfolio,ret));
+  if(sorted.length>0){const best=sorted[0],br=portReturn(best.portfolio,ret),ts=Object.entries(best.portfolio).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]),tn=SECTORS.find(s=>s.id===ts[0]?.[0])?.name||'';
+    if(br>0)lines.push(`🏆 ${best.name} leads this round — heavy bet on ${tn} paid off!`);else lines.push(`📉 Tough round — but ${best.name} lost less than anyone else.`)}
+  if(sorted.length>1){const worst=sorted[sorted.length-1],wr=portReturn(worst.portfolio,ret);if(wr<-.05)lines.push(`💸 ${worst.name} took a hit. Sometimes the market has other plans.`)}
+  const beat=players.filter(p=>portReturn(p.portfolio,ret)>idxR);
+  if(beat.length===0&&players.length>0)lines.push(`📊 Nobody beat the index this round — diversification wins!`);
+  else if(beat.length===players.length&&players.length>0)lines.push(`🎯 Everyone beat the index! But can it last?`);
+  if(cp.mood==='bear')lines.push(`💰 Dividend payers like ${SECTORS.filter(s=>s.div>=.02).map(s=>s.name).slice(0,2).join(' & ')} cushioned the blow.`);
+  return lines;
+}
+
+// ===================== STATE =====================
+let S={screen:'setup',players:[],cycle:[...DEFAULT_CYCLE],curRound:0,roundHist:[],idxHist:[BUDGET],usedNews:new Set(),gameNum:1,dmMode:false,
+  newsStep:0,mag:null,curNews:null,roundRet:null,battleDone:false,commentary:[],scene:null,
+  sectorHist:[],// array of {sectorId: {pe,phase}} per completed round
+  addName:'',addAlloc:{},addCash:0,rebalPlayer:'',rebalAlloc:{},playTab:'dashboard',rebalOpen:false,showCycleEditor:false};
+function setState(u){Object.assign(S,u);render()}
+
+// ===================== RENDER =====================
+function render(){
+  const app=document.getElementById('app');
+  switch(S.screen){
+    case 'setup':app.innerHTML=renderSetup();break;
+    case 'play':app.innerHTML=renderPlay();break;
+    case 'round':app.innerHTML=renderRound();break;
+    case 'results':app.innerHTML=renderResults();break;
+  }
+  attachEvents();
+}
+
+// ===================== SETUP =====================
+function renderSetup(){
+  const rbR=Math.floor(S.cycle.length/2);
+  
+  // Risk calculation for lobby display
+  function calcRisk(port){
+    const total=Object.entries(port).reduce((a,[,v])=>a+v,0);if(total===0)return{label:'—',color:'var(--muted)',beta:0,offPct:0,defPct:0,cashPct:0};
+    let wb=0,offA=0,cashA=port.cash||0;
+    Object.entries(port).forEach(([sid,amt])=>{if(amt<=0||sid==='cash')return;const s=SECTORS.find(x=>x.id===sid);wb+=s.beta*amt;if(s.type==='offensive')offA+=amt;});
+    const eqTotal=total-cashA;if(eqTotal>0)wb/=eqTotal;else wb=0;
+    const offPct=eqTotal>0?Math.round((offA/eqTotal)*100):0;
+    const levels=[{n:'Conservative',c:'#1d4ed8',t:.75},{n:'Mod. Conservative',c:'#3b82f6',t:.9},{n:'Moderate',c:'#ca8a04',t:1.1},{n:'Mod. Aggressive',c:'#ea580c',t:1.25},{n:'Aggressive',c:'#dc2626',t:99}];
+    // Adjust risk down if significant cash
+    const cashAdj=wb*(1-cashA/total);
+    const lev=levels.find(l=>cashAdj<l.t)||levels[4];
+    return{label:lev.n,color:lev.c,beta:wb,offPct,defPct:100-offPct,cashPct:Math.round((cashA/total)*100)};
+  }
+
+  return `<div class="container" style="animation:fadeIn .4s ease">
+  <div style="text-align:center;margin-bottom:28px">
+    <div style="font-size:11px;letter-spacing:5px;color:var(--muted);font-weight:600;margin-bottom:4px">MINI RETREAT ${new Date().getFullYear()}</div>
+    <h1 style="font-size:42px;margin:0;line-height:1.1">🐂 The Market Cycle Game 🐻</h1>
+    <div style="font-size:15px;color:var(--muted);margin-top:6px">Dungeon Master Control Panel</div>
+  </div>
+
+  <!-- DM Tools Toggle -->
+  <div style="text-align:right;margin-bottom:${S.showCycleEditor?'0':'-8'}px">
+    <button class="btn btn-sm ${S.showCycleEditor?'btn-primary':'btn-outline'}" onclick="setState({showCycleEditor:!S.showCycleEditor})" style="font-size:11px;opacity:0.7">${S.showCycleEditor?'🔒 Hide Cycle Editor':'🔧 DM Tools'}</button>
+  </div>
+
+  <!-- Cycle Editor (hidden by default) -->
+  ${S.showCycleEditor?`<div class="card" style="border:2px dashed var(--accent);margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="font-size:17px;margin:0">🎲 Economic Cycle — ${S.cycle.length} Rounds</h3>
+      <button class="btn btn-sm ${S.dmMode?'btn-primary':'btn-outline'}" onclick="setState({dmMode:!S.dmMode})">${S.dmMode?'🔒 Lock':'✏️ Edit'}</button>
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">${S.cycle.map((pid,i)=>{const ph=PHASES.find(c=>c.id===pid);return `<div class="cyc-chip" data-idx="${i}" style="padding:6px 10px;border-radius:8px;border:2px solid ${ph.color}40;background:${ph.color}12;font-size:10px;font-weight:700;color:${ph.color};text-align:center;cursor:${S.dmMode?'pointer':'default'};min-width:72px;font-family:var(--font-b);transition:.1s"><div style="font-size:16px">${ph.icon}</div><div>R${i+1}</div><div style="font-size:8px">${ph.name}</div></div>`}).join('')}
+    ${S.dmMode?`<div onclick="rmCycRound()" style="padding:6px 10px;border-radius:8px;border:2px dashed var(--red)40;cursor:pointer;font-size:20px;color:var(--red);display:flex;align-items:center;justify-content:center;min-width:40px;opacity:${S.cycle.length>3?'1':'0.3'}">&minus;</div><div onclick="addCycRound()" style="padding:6px 10px;border-radius:8px;border:2px dashed var(--border);cursor:pointer;font-size:20px;color:var(--muted);display:flex;align-items:center;justify-content:center;min-width:40px">+</div>`:''}</div>
+    ${S.dmMode?`<div style="font-size:11px;color:var(--muted);margin-top:8px">Click rounds to change phase. Min 3 rounds.</div>`:''}
+    <div style="font-size:12px;color:var(--muted);margin-top:10px">📋 Rules: ${MAX_SECTORS} sectors + optional cash · ${(MGMT_FEE*100).toFixed(1)}% management fee per round · Index is free</div>
+  </div>`:''}
+
+  <!-- Market Context: Where Are We Now? -->
+  <div class="card" style="padding:28px 32px;margin-top:14px">
+    <h3 style="font-size:20px;margin:0 0 4px;text-align:center">📈 The Economy Right Now</h3>
+    ${(()=>{
+      const fp=S.cycle[0],ph=PHASES.find(p=>p.id===fp);
+      // Determine narrative based on first phase
+      const isGrowth=['expansion','minor_expansion','peak'].includes(fp);
+      const isRecovery=['early_recovery'].includes(fp);
+      // isDecline covers minor_recession, major_recession, trough
+      const subtitle=isGrowth?'Markets have been growing — but what comes next?':isRecovery?'The economy is recovering from a downturn — will it hold?':'The economy has been slowing — how bad will it get?';
+      const lineColor=isGrowth?'#2d8a4e':isRecovery?'#eab308':'#c0392b';
+      // Different curve shapes
+      const curvePath=isGrowth
+        ?'M 30 140 C 80 135, 120 120, 180 100 C 240 80, 300 60, 380 45 C 430 36, 490 32, 570 30'
+        :isRecovery
+        ?'M 30 50 C 80 60, 140 100, 220 130 C 280 145, 340 148, 400 140 C 440 130, 500 110, 570 90'
+        :'M 30 40 C 80 45, 140 60, 220 85 C 300 115, 380 135, 450 150 C 500 158, 540 162, 570 165';
+      const dotY=isGrowth?30:isRecovery?90:165;
+      const labels=isGrowth
+        ?'<text x="100" y="155" font-size="9" fill="#65a30d" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Recovery</text><text x="280" y="80" font-size="9" fill="#16a34a" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Growth</text><text x="480" y="22" font-size="10" fill="'+lineColor+'" font-family="var(--font-b)" font-weight="700" text-anchor="middle">🚀 Expansion</text>'
+        :isRecovery
+        ?'<text x="100" y="42" font-size="9" fill="#c0392b" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Prior Peak</text><text x="280" y="155" font-size="9" fill="#c0392b" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Downturn</text><text x="480" y="100" font-size="10" fill="'+lineColor+'" font-family="var(--font-b)" font-weight="700" text-anchor="middle">🌱 Recovering</text>'
+        :'<text x="100" y="32" font-size="9" fill="#2d8a4e" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Prior Peak</text><text x="300" y="115" font-size="9" fill="#ea580c" font-family="var(--font-b)" font-weight="600" text-anchor="middle">Slowing</text><text x="500" y="158" font-size="10" fill="'+lineColor+'" font-family="var(--font-b)" font-weight="700" text-anchor="middle">📉 Declining</text>';
+      const bottomText=isGrowth?'The economy has been expanding. Will it keep going — or is a downturn ahead?':isRecovery?'Things are recovering from a rough patch. Will the momentum continue?':'The economy is weakening. Will it stabilize — or get worse?';
+      return `<div style="font-size:13px;color:var(--muted);text-align:center;margin-bottom:18px">${subtitle}</div>
+    <div style="overflow-x:auto">
+      <svg width="100%" height="200" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet">
+        <line x1="0" y1="100" x2="800" y2="100" stroke="#e8e5e0" stroke-width="1" stroke-dasharray="4 4"/>
+        <line x1="0" y1="50" x2="800" y2="50" stroke="#e8e5e0" stroke-width="0.5" stroke-dasharray="2 4"/>
+        <line x1="0" y1="150" x2="800" y2="150" stroke="#e8e5e0" stroke-width="0.5" stroke-dasharray="2 4"/>
+        <text x="60" y="192" font-size="10" fill="#b8b3ae" font-family="var(--font-m)" text-anchor="middle">18 mo ago</text>
+        <text x="180" y="192" font-size="10" fill="#b8b3ae" font-family="var(--font-m)" text-anchor="middle">12 mo ago</text>
+        <text x="310" y="192" font-size="10" fill="#b8b3ae" font-family="var(--font-m)" text-anchor="middle">6 mo ago</text>
+        <text x="450" y="192" font-size="10" fill="#b8b3ae" font-family="var(--font-m)" text-anchor="middle">3 mo ago</text>
+        <text x="570" y="192" font-size="11" fill="${lineColor}" font-family="var(--font-m)" font-weight="700" text-anchor="middle">TODAY</text>
+        <path d="${curvePath}" fill="none" stroke="${lineColor}" stroke-width="5" stroke-linecap="round" opacity="0.08"/>
+        <path d="${curvePath}" fill="none" stroke="${lineColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        ${labels}
+        <circle cx="570" cy="${dotY}" r="8" fill="${lineColor}" stroke="white" stroke-width="3"/>
+        <circle cx="570" cy="${dotY}" r="3" fill="white"/>
+        <line x1="570" y1="${dotY+12}" x2="570" y2="175" stroke="${lineColor}" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.3"/>
+        <circle cx="600" cy="${dotY+2}" r="2.5" fill="#c5a55a" opacity="0.5"/>
+        <circle cx="620" cy="${dotY+4}" r="2" fill="#c5a55a" opacity="0.35"/>
+        <circle cx="638" cy="${dotY+6}" r="1.5" fill="#c5a55a" opacity="0.2"/>
+        <text x="700" y="85" font-size="72" fill="#c5a55a" font-family="var(--font-d)" font-weight="900" text-anchor="middle" opacity="0.25">?</text>
+        <text x="700" y="120" font-size="11" fill="#c5a55a" font-family="var(--font-b)" font-weight="700" text-anchor="middle" opacity="0.5">What happens next?</text>
+        <text x="10" y="50" font-size="8" fill="#ccc" font-family="var(--font-m)" text-anchor="start">Growth</text>
+        <text x="10" y="155" font-size="8" fill="#ccc" font-family="var(--font-m)" text-anchor="start">Decline</text>
+      </svg>
+    </div>
+    <div style="text-align:center;margin-top:8px;font-size:13px;color:var(--muted)">${bottomText} <strong style="color:var(--text)">That's the game.</strong></div>`;
+    })()}
+  </div>
+
+  <!-- Player Lobby -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:20px;margin:0">👥 Player Lobby ${S.players.length>0?'('+S.players.length+' ready)':''}</h3>
+      <div style="display:flex;gap:8px">
+        <button id="firebaseBtn" class="btn btn-sm btn-gold" onclick="loadFromFirebase()">🔄 Load Portfolios from Players</button>
+        <button class="btn btn-sm btn-outline" onclick="loadDemoPlayers()">🧪 Demo Players</button>
+        ${S.players.length>0?`<button class="btn btn-sm btn-outline" onclick="setState({players:[]})">Clear All</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="clearFirebase()" title="Clear submitted portfolios from Firebase">🗑️</button>
+      </div>
+    </div>
+
+    ${S.players.length===0?`
+      <div style="text-align:center;padding:40px 20px">
+        <div style="font-size:48px;margin-bottom:12px;opacity:0.3">📱</div>
+        <div style="font-size:18px;font-weight:700;color:var(--muted);margin-bottom:6px">Waiting for players...</div>
+        <div style="font-size:13px;color:var(--muted)">Players will appear here as they submit portfolios from their devices.<br>Use "Load Demo Players" to test the game.</div>
+      </div>
+    `:` 
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">
+        ${S.players.map((p,i)=>{
+          const risk=calcRisk(p.portfolio);
+          const holdings=Object.entries(p.portfolio).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+          const hasCash=p.portfolio.cash>0;
+          return `<div style="background:var(--card);border:2px solid ${risk.color}30;border-radius:14px;padding:18px;position:relative">
+            <button onclick="rmPlayer(${i})" style="position:absolute;top:8px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">✕</button>
+            <div style="font-family:var(--font-d);font-size:20px;font-weight:900;margin-bottom:10px">${p.name}</div>
+            
+            <!-- Holdings bars -->
+            <div style="margin-bottom:12px">${holdings.map(([sid,amt])=>{
+              const s=sid==='cash'?{icon:'🏦',name:'Cash',color:'#059669'}:SECTORS.find(x=>x.id===sid);
+              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span style="font-size:16px;width:22px;text-align:center">${s.icon}</span>
+                <span style="font-size:12px;font-weight:700;color:${s.color};min-width:80px">${s.name}</span>
+                <div style="flex:1;height:8px;background:#f0eeeb;border-radius:4px;overflow:hidden"><div style="height:100%;width:${(amt/BUDGET)*100}%;background:${s.color};border-radius:4px"></div></div>
+                <span style="font-family:var(--font-m);font-size:13px;font-weight:700;color:${s.color};min-width:40px;text-align:right">$${amt}</span>
+              </div>`;
+            }).join('')}</div>
+
+            <!-- Risk badge -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)">
+              <div>
+                <div style="font-size:10px;color:var(--muted);margin-bottom:2px">RISK APPETITE</div>
+                <div style="font-family:var(--font-d);font-size:16px;font-weight:900;color:${risk.color}">${risk.label}</div>
+              </div>
+              <div style="display:flex;gap:14px;font-size:11px">
+                <div style="text-align:center"><div style="color:var(--muted)">Beta</div><div style="font-family:var(--font-m);font-weight:700;color:${risk.color}">${risk.beta.toFixed(2)}</div></div>
+                <div style="text-align:center"><div style="color:var(--muted)">Off/Def</div><div style="font-family:var(--font-m);font-weight:700">${risk.offPct}/${risk.defPct}</div></div>
+                ${hasCash?`<div style="text-align:center"><div style="color:var(--muted)">Cash</div><div style="font-family:var(--font-m);font-weight:700;color:#059669">${risk.cashPct}%</div></div>`:''}
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    `}
+  </div>
+
+  <div style="text-align:center;margin-top:20px"><button class="btn btn-primary" style="font-size:18px;padding:16px 52px" ${S.players.length<1?'disabled':''} onclick="startGame()">🎬 Start Game (${S.players.length} players)</button></div>
+  </div>`;
+}
+
+// ===================== PLAY (DASHBOARD) =====================
+function renderPlay(){
+  const gameOver=S.curRound>=S.cycle.length,canRebal=S.curRound>0&&!gameOver;
+  return `<div class="container" style="animation:fadeIn .3s ease">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+    <div><h2 style="font-size:26px;margin:0">🐂 Market Cycle Game</h2><div style="font-size:14px;color:var(--muted)">Round ${Math.min(S.curRound+1,S.cycle.length)} of ${S.cycle.length}</div></div>
+    <div style="display:flex;gap:8px">${canRebal&&!S.rebalOpen?`<button id="rebalBtn" class="btn btn-sm btn-outline" onclick="enableRebalance()" title="Open rebalance window for players">⚖️ Rebalance</button>`:canRebal&&S.rebalOpen?`<button id="rebalLoadBtn" class="btn btn-sm btn-green" onclick="loadRebalanced()">🔄 Load Rebalanced</button>`:''}${gameOver?`<button class="btn btn-gold" onclick="showResults()">🏆 Final Results</button>`:`<button class="btn btn-primary" onclick="startRound()">▶ Next Round</button>`}</div>
+  </div>
+  <div class="card" style="padding:16px 24px">${renderSCurve()}</div>
+  <div class="tabs">
+    <button class="tab ${S.playTab==='dashboard'?'active':''}" onclick="setState({playTab:'dashboard'})">📊 Dashboard</button>
+    <button class="tab ${S.playTab==='leaderboard'?'active':''}" onclick="setState({playTab:'leaderboard'})">🏆 Leaderboard</button>
+    <button class="tab ${S.playTab==='players'?'active':''}" onclick="setState({playTab:'players'})">👥 Players</button>
+    <button class="tab ${S.playTab==='sectors'?'active':''}" onclick="setState({playTab:'sectors'})">📈 Sectors</button>
+    <button class="tab ${S.playTab==='history'?'active':''}" onclick="setState({playTab:'history'})">📜 History</button>
+  </div>
+  ${S.playTab==='dashboard'?renderDashboard():''}${S.playTab==='leaderboard'?renderLeaderboard():''}${S.playTab==='players'?renderPlayers():''}${S.playTab==='sectors'?renderSectorExplorer():''}${S.playTab==='history'?renderHistory():''}
+  </div>`;
+}
+
+function renderSCurve(){
+  const n=S.cycle.length,cr=S.curRound;
+  const yMap=pid=>{const ph=PHASES.find(p=>p.id===pid);return ph.mood==='bull'?(ph.ret>.1?18:28):(ph.ret<-.1?68:56)};
+  const ys=S.cycle.map(pid=>yMap(pid));
+  const w=n*110+160;
+  const lastDone=cr-1;// index of last completed round (-1 if none)
+
+  // Solid line through completed rounds
+  const pastLine=cr>0?ys.slice(0,cr).map((y,i)=>`${i*110+55},${y}`).join(' '):'';
+
+  // Scenario projections launch from the last completed round dot
+  let scenarioSVG='';
+  if(cr>0&&cr<n){
+    const startY=ys[lastDone];const startX=lastDone*110+55;
+    const remaining=n-cr;const scLen=Math.min(remaining+1,4);
+    const scenarios=[
+      {name:"Continued Growth",color:"#16a34a",yEnd:15,dash:"8 4"},
+      {name:"Soft Landing",color:"#eab308",yEnd:40,dash:"6 6"},
+      {name:"Recession",color:"#dc2626",yEnd:70,dash:"4 4"}
+    ];
+    scenarios.forEach(sc=>{
+      const pts=[];for(let i=0;i<=scLen;i++){const x=startX+(i*110);const y=startY+(sc.yEnd-startY)*(i/scLen);pts.push(`${x},${y}`);}
+      scenarioSVG+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${sc.color}" stroke-width="2.5" stroke-dasharray="${sc.dash}" opacity="0.5"/>`;
+      const endX=startX+scLen*110,endY=startY+(sc.yEnd-startY);
+      scenarioSVG+=`<text x="${endX+8}" y="${endY+4}" font-size="11" font-family="var(--font-b)" fill="${sc.color}" font-weight="700" opacity="0.7">${sc.name}</text>`;
+    });
+  }
+
+  return `<div style="overflow-x:auto"><svg width="100%" height="90" viewBox="0 0 ${w} 90" preserveAspectRatio="xMinYMid meet">
+    ${S.cycle.map((pid,i)=>{const ph=PHASES.find(p=>p.id===pid);return `<rect x="${i*110}" y="0" width="110" height="90" fill="${ph.color}" opacity="${i<cr?0.08:i===cr?0.12:0.03}" rx="4"/>`}).join('')}
+    ${pastLine?`<polyline points="${pastLine}" fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>`:''}
+    ${scenarioSVG}
+    ${S.cycle.map((pid,i)=>{const ph=PHASES.find(p=>p.id===pid);const isPast=i<cr&&i<lastDone;const isLastDone=i===lastDone&&cr>0;const isFuture=i>=cr;
+      if(isLastDone) return `<circle cx="${i*110+55}" cy="${ys[i]}" r="10" fill="${ph.color}" stroke="white" stroke-width="3" opacity="1"/>
+        <text x="${i*110+55}" y="86" text-anchor="middle" font-size="10" font-family="var(--font-m)" fill="${ph.color}" font-weight="700">${ph.icon} R${i+1}</text>`;
+      if(isPast) return `<circle cx="${i*110+55}" cy="${ys[i]}" r="6" fill="${ph.color}" stroke="white" stroke-width="2" opacity="0.6"/>
+        <text x="${i*110+55}" y="86" text-anchor="middle" font-size="9" font-family="var(--font-m)" fill="${ph.color}" font-weight="400">${ph.icon} R${i+1}</text>`;
+      return `<circle cx="${i*110+55}" cy="${ys[i]}" r="4" fill="#e8e5e0" stroke="white" stroke-width="1.5" opacity="0.25"/>
+        <text x="${i*110+55}" y="86" text-anchor="middle" font-size="9" font-family="var(--font-m)" fill="#ccc" font-weight="400">R${i+1}</text>`;
+    }).join('')}
+  </svg></div>`;
+}
+
+function renderDashboard(){
+  const maxV=Math.max(...S.idxHist,...S.players.flatMap(p=>p.history)),minV=Math.min(...S.idxHist,...S.players.flatMap(p=>p.history)),range=maxV-minV||1;
+  const cH=280,cW=900,pts=S.idxHist.length;
+  function tp(arr){return arr.map((v,i)=>{const x=pts>1?(i/(pts-1))*cW:cW/2;const y=cH-((v-minV)/range)*(cH-20)-10;return `${i===0?'M':'L'} ${x.toFixed(1)} ${y.toFixed(1)}`}).join(' ')}
+  const colors=['#2563eb','#dc2626','#16a34a','#9333ea','#ea580c','#0891b2','#c026d3','#65a30d','#f59e0b','#6366f1'];
+  return `<div class="card">
+    <h3 style="font-size:17px;margin:0 0 14px">Portfolio Performance</h3>
+    <div style="height:${cH}px"><svg width="100%" height="100%" viewBox="0 0 ${cW} ${cH}" preserveAspectRatio="none">
+      ${[0,.25,.5,.75,1].map(p=>{const y=cH-p*(cH-20)-10,val=minV+p*range;return `<line x1="0" y1="${y}" x2="${cW}" y2="${y}" stroke="#e8e5e0" stroke-width=".5"/><text x="${cW+5}" y="${y+4}" font-size="10" fill="var(--muted)" font-family="var(--font-m)">$${Math.round(val)}</text>`}).join('')}
+      <path d="${tp(S.idxHist)}" fill="none" stroke="#a8a29e" stroke-width="2.5" stroke-dasharray="6 4"/>
+      ${S.players.map((p,i)=>`<path d="${tp(p.history)}" fill="none" stroke="${colors[i%colors.length]}" stroke-width="2.5"/>`).join('')}
+    </svg></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:13px">
+      <div style="display:flex;align-items:center;gap:5px"><div style="width:20px;height:2px;background:#a8a29e;border-top:1px dashed #a8a29e"></div><span style="color:var(--muted)">Index</span></div>
+      ${S.players.map((p,i)=>`<div style="display:flex;align-items:center;gap:5px"><div style="width:14px;height:3px;background:${colors[i%colors.length]};border-radius:2px"></div><span style="font-weight:600">${p.name}</span></div>`).join('')}
+    </div></div>
+  ${S.commentary.length?`<div class="commentary">${S.commentary.map(l=>`<div style="margin-bottom:6px">${l}</div>`).join('')}</div>`:''}`;
+}
+
+function renderLeaderboard(){
+  const idxV=S.idxHist[S.idxHist.length-1];
+  const entries=[...S.players.map(p=>({name:p.name,val:p.history[p.history.length-1],isIdx:false})),{name:'Market Index',val:idxV,isIdx:true}].sort((a,b)=>b.val-a.val);
+  const rc=['#c5a55a','#94a3b8','#b45309','#475569','#475569','#475569','#475569','#475569','#475569','#475569'];
+  return `<div class="card"><h3 style="font-size:17px;margin:0 0 14px">Leaderboard</h3>
+    ${entries.map((e,i)=>{const bi=!e.isIdx&&e.val>idxV;
+      if(e.isIdx) return `<div class="lb-row" style="background:#f5f4f0;border:2px dashed var(--border)"><div class="lb-rank" style="background:var(--muted)">📊</div><div class="lb-name" style="color:var(--muted)">Market Index</div><span class="lb-val" style="color:var(--muted)">$${e.val.toFixed(0)}</span></div>`;
+      return `<div class="lb-row"><div class="lb-rank" style="background:${rc[i]}">${i+1}</div><div class="lb-name">${e.name} ${bi?'<span style="font-size:11px;color:var(--green)">✓ beats index</span>':''}</div><span class="lb-val" style="color:${bi?'var(--green)':'var(--red)'}">$${e.val.toFixed(0)}</span></div>`;
+    }).join('')}</div>`;
+}
+
+function renderPlayers(){
+  const idxV=S.idxHist[S.idxHist.length-1];
+  const colors=['#2563eb','#dc2626','#16a34a','#9333ea','#ea580c','#0891b2','#c026d3','#65a30d','#f59e0b','#6366f1'];
+  const sorted=[...S.players].map((p,oi)=>({...p,val:p.history[p.history.length-1],color:colors[oi%colors.length]})).sort((a,b)=>b.val-a.val);
+  return `<div class="card"><h3 style="font-size:17px;margin:0 0 14px">👥 Player Portfolios</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px">
+  ${sorted.map((p,rank)=>{
+    const ret=((p.val-BUDGET)/BUDGET*100).toFixed(1);
+    const beatsIdx=p.val>idxV;
+    const holdings=Object.entries(p.portfolio).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    const total=holdings.reduce((s,[,v])=>s+v,0);
+    // Weighted beta
+    let wb=0;holdings.forEach(([sid,amt])=>{if(sid==='cash')return;const s=SECTORS.find(x=>x.id===sid);if(s)wb+=s.beta*amt});
+    const eqAmt=total-(p.portfolio.cash||0);if(eqAmt>0)wb/=eqAmt;
+    const offAmt=holdings.reduce((s,[sid,amt])=>{const sec=SECTORS.find(x=>x.id===sid);return sec&&sec.type==='offensive'?s+amt:s},0);
+    const offPct=total>0?Math.round((offAmt/total)*100):0;
+    return `<div style="background:var(--card);border:2px solid ${p.color}30;border-radius:14px;padding:20px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div>
+          <div style="font-family:var(--font-d);font-size:22px;font-weight:900">${p.name}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">#${rank+1} · β ${wb.toFixed(2)} · ${offPct}% offensive</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-m);font-size:24px;font-weight:800;color:${beatsIdx?'var(--green)':'var(--red)'}">$${p.val.toFixed(0)}</div>
+          <div style="font-size:12px;color:${beatsIdx?'var(--green)':'var(--red)'}">${ret>0?'+':''}${ret}% ${beatsIdx?'✓ beats index':'✗ behind'}</div>
+        </div>
+      </div>
+      <!-- Holdings breakdown -->
+      ${holdings.map(([sid,amt])=>{
+        const s=sid==='cash'?{icon:'🏦',name:'Cash',color:'#059669'}:SECTORS.find(x=>x.id===sid);
+        if(!s)return '';
+        const pct=total>0?Math.round((amt/total)*100):0;
+        return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px;width:24px;text-align:center">${s.icon}</span>
+          <span style="font-size:13px;font-weight:700;color:${s.color};min-width:110px">${s.name}</span>
+          <div style="flex:1;height:10px;background:#f0eeeb;border-radius:5px;overflow:hidden"><div style="height:100%;width:${pct}%;background:${s.color};border-radius:5px"></div></div>
+          <span style="font-family:var(--font-m);font-size:14px;font-weight:700;color:${s.color};min-width:55px;text-align:right">$${amt} <span style="font-size:10px;color:var(--muted)">${pct}%</span></span>
+        </div>`;
+      }).join('')}
+      <!-- Mini sparkline -->
+      ${p.history.length>1?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:1px;font-weight:600;margin-bottom:4px">PERFORMANCE</div>
+        <svg viewBox="0 0 200 40" width="100%" height="40" preserveAspectRatio="none">
+          ${(()=>{const mn=Math.min(...p.history),mx=Math.max(...p.history),rng=mx-mn||1;
+            const pts=p.history.map((v,i)=>`${(i/(p.history.length-1))*200},${40-((v-mn)/rng)*36-2}`).join(' ');
+            return `<polyline points="${pts}" fill="none" stroke="${p.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="0" y1="${40-((BUDGET-mn)/rng)*36-2}" x2="200" y2="${40-((BUDGET-mn)/rng)*36-2}" stroke="#e8e5e0" stroke-width="1" stroke-dasharray="3 3"/>`;
+          })()}
+        </svg>
+      </div>`:''}
+    </div>`;
+  }).join('')}
+  </div></div>`;
+}
+
+function renderSectorExplorer(){
+  const lastPh=S.curRound>0?S.cycle[S.curRound-1]:S.cycle[0];
+  const hist=S.sectorHist;// array of {phase, pes:{sectorId:peValue}}
+  return `<div class="card"><h3 style="font-size:17px;margin:0 0 14px">Sector Explorer</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">${SECTORS.map(s=>{
+    const pe=getPE(s.id,lastPh),pePct=Math.max(0,Math.min(100,((pe-s.peLow)/(s.peHigh-s.peLow))*100)),peColor=pePct>70?'#ef4444':pePct>40?'#eab308':'#16a34a',betaColor=s.beta>1.2?'#ef4444':s.beta>.9?'#eab308':'#16a34a',isOff=s.type==='offensive';
+    const angle=Math.PI-(pePct/100)*Math.PI,cx=100,cy=100,nl=52,nx=cx+nl*Math.cos(angle),ny=cy-nl*Math.sin(angle);
+    // PE history sparkline
+    const peHist=hist.map(h=>h.pes[s.id]);
+    let sparkSVG='',peChange='';
+    if(peHist.length>0){
+      const first=peHist[0],last=peHist[peHist.length-1],diff=last-first;
+      peChange=diff>0?`<span style="color:#ef4444;font-size:11px;font-weight:700">↑${diff} from R1</span>`:diff<0?`<span style="color:#16a34a;font-size:11px;font-weight:700">↓${Math.abs(diff)} from R1</span>`:`<span style="color:var(--muted);font-size:11px">unchanged</span>`;
+      if(peHist.length>1){
+        const minP=Math.min(...peHist,s.peLow),maxP=Math.max(...peHist,s.peHigh),range=maxP-minP||1;
+        const w=120,h=30;
+        const pts=peHist.map((v,i)=>`${(i/(peHist.length-1))*w},${h-((v-minP)/range)*h}`).join(' ');
+        sparkSVG=`<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" style="display:block;margin:6px auto 0">
+          <polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          ${peHist.map((v,i)=>`<circle cx="${(i/(peHist.length-1))*w}" cy="${h-((v-minP)/range)*h}" r="3" fill="${s.color}" stroke="white" stroke-width="1"/>`).join('')}
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--muted);margin-top:2px"><span>R1</span><span>R${peHist.length}</span></div>`;
+      }
+    }
+    return `<div style="padding:18px;border-radius:14px;border:1px solid ${isOff?'#fed7aa50':'#bae6fd50'};background:${isOff?'linear-gradient(150deg,#fff8ef,#fff2e4)':'linear-gradient(150deg,#f0f6ff,#ebf3fd)'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:28px">${s.icon}</span><span style="font-family:var(--font-d);font-size:22px;font-weight:900;color:${s.color}">${s.name}</span><span class="phase-badge" style="margin-left:auto;background:${isOff?'#fef2f2':'#eff6ff'};color:${isOff?'#b91c1c':'#1d4ed8'};font-size:10px">${isOff?'🏈 Offensive':'🛡️ Defensive'}</span></div>
+      <div style="text-align:center;font-size:13px;color:#666;margin-bottom:2px">${s.desc}</div>
+      <div style="text-align:center;font-size:12px;color:#aaa;font-style:italic;margin-bottom:12px">${s.examples}</div>
+      <div style="display:flex;gap:28px;justify-content:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+        <div style="text-align:center"><div style="font-size:11px;color:var(--muted)">β Beta</div><div style="font-family:var(--font-d);font-size:22px;font-weight:900;color:${betaColor}">${s.beta}</div></div>
+        <div style="text-align:center"><div style="font-size:11px;color:var(--muted)">🪙 Dividend</div><div style="font-family:var(--font-d);font-size:22px;font-weight:900;color:var(--green)">${(s.div*100).toFixed(1)}%</div></div>
+      </div>
+      <div style="background:#fafaf8;border-radius:12px;padding:14px;border:1px solid #e8e5e0">
+        <div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:10px;color:var(--muted);letter-spacing:1.5px;font-weight:700">📊 PE RATIO</span>${peChange}</div>
+        <svg viewBox="0 0 200 120" width="180" height="108" style="display:block;margin:0 auto">
+          <path d="M 20 100 A 80 80 0 0 1 53 38" fill="none" stroke="#2d8a4e" stroke-width="16" stroke-linecap="round" opacity=".55"/>
+          <path d="M 58 33 A 80 80 0 0 1 142 33" fill="none" stroke="#eab308" stroke-width="16" stroke-linecap="round" opacity=".55"/>
+          <path d="M 147 38 A 80 80 0 0 1 180 100" fill="none" stroke="#ef4444" stroke-width="16" stroke-linecap="round" opacity=".55"/>
+          <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="#1a1a1a" stroke-width="2.5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4" fill="#1a1a1a"/>
+          <circle cx="${cx}" cy="112" r="18" fill="white" stroke="${peColor}" stroke-width="2"/><text x="${cx}" y="117" text-anchor="middle" font-family="'Playfair Display',Georgia,serif" font-size="20" font-weight="900" fill="${peColor}">${pe}</text>
+        </svg>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:9px;font-weight:600"><span style="color:#2d8a4e">Cheap (${s.peLow})</span><span style="color:#eab308;text-align:center">Fair Value</span><span style="color:#ef4444;text-align:right">Expensive (${s.peHigh})</span></div>
+        ${sparkSVG?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8e5e0"><div style="text-align:center;font-size:9px;color:var(--muted);letter-spacing:1px;font-weight:600;margin-bottom:2px">PE HISTORY</div>${sparkSVG}</div>`:''}
+      </div></div>`}).join('')}</div></div>`;
+}
+
+function renderHistory(){
+  if(!S.roundHist.length)return `<div class="card"><p style="color:var(--muted);text-align:center;padding:24px">No rounds played yet.</p></div>`;
+  return `<div class="card"><h3 style="font-size:17px;margin:0 0 14px">Round History</h3>${S.roundHist.map((rh,i)=>{const ph=PHASES.find(p=>p.id===rh.phase);return `<div style="padding:12px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;${ph.mood==='bear'?'background:#fef2f2':'background:#f0fdf4'}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><div style="font-weight:700;font-size:15px">${ph.icon} R${i+1}: ${ph.name}</div><div style="font-family:var(--font-m);font-size:11px;color:var(--muted)">Mag ${(rh.mag*100).toFixed(0)}%</div></div><div style="font-size:14px;font-style:italic;color:#555">"${rh.news.headline}"</div></div>`}).join('')}</div>`;
+}
+
+// ===================== ROUND =====================
+function renderRound(){
+  const phase=PHASES.find(c=>c.id===S.cycle[S.curRound]),isBear=phase.mood==='bear',sc=S.scene;let content='';
+
+  if(S.newsStep===0){// Battle
+    content=`<div style="text-align:center;animation:fadeIn .5s ease">
+      <div style="font-size:12px;letter-spacing:3px;color:#a8a29e;margin-bottom:8px">ROUND ${S.curRound+1} OF ${S.cycle.length}</div>
+      <div style="font-size:56px;margin:12px 0">${phase.icon}</div>
+      <h1 style="font-size:40px;font-weight:900;color:${phase.color};margin:0;text-shadow:0 0 30px ${phase.color}40;font-family:var(--font-d)">${phase.name}</h1>
+      <div style="background:rgba(255,255,255,.06);border-radius:18px;padding:32px;margin:28px 0;border:1px solid rgba(255,255,255,.1)">
+        <div style="font-size:13px;letter-spacing:3px;color:#a8a29e;margin-bottom:16px">${sc.title}</div>
+        ${!S.battleDone?`<div id="battleShuffle" style="font-size:72px;margin-bottom:10px;transition:transform .05s">${sc.bull} vs ${sc.bear}</div>
+        <button id="battleBtn" class="btn btn-gold" style="margin-top:16px;font-size:17px;padding:16px 44px" onclick="revealBattle()">⚡ Reveal the Winner!</button>`
+        :`<div style="display:flex;align-items:center;justify-content:center;gap:60px;margin-top:8px;animation:fadeIn .3s ease">
+          <div style="position:relative;font-size:72px;">
+            ${sc.bull}
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:24px;padding:6px 18px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${isBear?'#ef4444':'#4ade80'};color:${isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.6)">${isBear?'LOSER':'WINNER'}</div>
+          </div>
+          <div style="font-size:28px;color:#a8a29e;font-weight:900">vs</div>
+          <div style="position:relative;font-size:72px;">
+            ${sc.bear}
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:24px;padding:6px 18px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${!isBear?'#ef4444':'#4ade80'};color:${!isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.6)">${!isBear?'LOSER':'WINNER'}</div>
+          </div>
+        </div>
+        <div style="font-size:22px;font-weight:700;margin-top:20px;color:${isBear?'#ef4444':'#4ade80'};animation:slideUp .5s ease .4s both">${isBear?sc.bearWin:sc.bullWin}</div>`}
+      </div>
+      ${S.battleDone?`<button class="btn btn-primary" style="margin-top:8px;font-size:16px" onclick="advanceNews()">📰 Breaking News →</button>`:''}
+    </div>`;
+  } else if(S.newsStep===1){// News
+    const nw=S.curNews;
+    content=`<div style="animation:fadeIn .3s ease"><div class="newspaper"><div class="newspaper-mast">${nw.paper}</div><div class="newspaper-hl">${nw.headline}</div><div class="newspaper-sub">${nw.sub}</div><div style="text-align:right;margin-top:12px"><span style="font-family:var(--font-m);font-size:11px;color:#b8b3ae;letter-spacing:0.5px">Historical event: ${nw.year}</span></div><div class="newspaper-stamp" style="border-color:${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'var(--green)':'var(--red)'})()};color:${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'var(--green)':'var(--red)'})()}">${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'BULLISH':'BEARISH'})()}</div></div>
+    <div style="text-align:center;margin-top:28px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="processRound()">📊 Calculate Returns</button></div></div>`;
+  } else if(S.newsStep===2){// Returns
+    const ret=S.roundRet,nw=S.curNews;
+    // Build list of sectors that have news reasons (for progressive reveal)
+    const reasonSectors=SECTORS.filter(s=>Math.abs(ret[s.id].news)>0.001&&nw.reasons&&nw.reasons[s.id]).map(s=>s.id);
+    S._reasonSectors=reasonSectors;S._reasonsRevealed=S._reasonsRevealed||0;
+    const allRevealed=S._reasonsRevealed>=reasonSectors.length;
+    let reasonIdx=0;
+    content=`<div style="animation:slideUp .5s ease">
+    <div style="text-align:center;margin-bottom:18px;padding:14px 20px;background:rgba(255,255,255,.04);border-radius:12px;border:1px solid rgba(255,255,255,.08)">
+      <div style="font-family:var(--font-d);font-size:20px;font-weight:900;color:#e8e5e0;margin-bottom:4px">📰 ${nw.headline}</div>
+      <div style="font-size:13px;color:#a8a29e;font-style:italic">${nw.sub}</div>
+    </div>
+    <h2 style="color:#e8e5e0;font-size:24px;margin:0 0 22px;text-align:center">Sector Returns — Round ${S.curRound+1}</h2>
+    <div class="ret-grid">${SECTORS.map(s=>{const r=ret[s.id],pos=r.total>=0,hasNews=Math.abs(r.news)>0.001;
+      const isMixed=(hasNews&&r.news<0&&pos)||(hasNews&&r.news>0&&!pos);
+      const totalColor=isMixed?'#eab308':pos?'#4ade80':'#f87171';
+      const bgColor=isMixed?'rgba(234,179,8,.18)':pos?'rgba(22,163,74,.08)':'rgba(239,68,68,.08)';
+      const borderColor=isMixed?'rgba(234,179,8,.5)':pos?'rgba(22,163,74,.25)':'rgba(239,68,68,.25)';
+      const reason=hasNews&&nw.reasons&&nw.reasons[s.id]?nw.reasons[s.id]:'';
+      const thisReasonIdx=reason?reasonIdx++:-1;
+      const isRevealed=thisReasonIdx>=0&&thisReasonIdx<S._reasonsRevealed;
+      return `<div class="ret-card" style="background:${bgColor};border-color:${borderColor}">
+      <div class="ret-card-hdr"><span style="font-size:22px">${s.icon}</span><span style="font-weight:700;font-size:16px;color:${totalColor}">${s.name}</span>${hasNews?`<span style="margin-left:auto;font-size:11px;padding:3px 8px;border-radius:4px;background:${r.news>=0?'rgba(74,222,128,.15)':'rgba(248,113,113,.15)'};color:${r.news>=0?'#4ade80':'#f87171'};font-weight:700">📰 ${r.news>=0?'BOOST':'HIT'}</span>`:''}</div>
+      <div style="display:flex;gap:12px;align-items:flex-end;margin:12px 0 10px;flex-wrap:wrap">
+        <div style="text-align:center;min-width:50px"><div style="font-size:11px;color:#a8a29e;margin-bottom:3px">BASE</div><div style="font-family:var(--font-m);font-size:18px;font-weight:700;color:#e8e5e0">${(r.base*100).toFixed(1)}%</div></div>
+        ${hasNews?`<div style="font-size:16px;color:#555">+</div><div style="text-align:center;min-width:50px"><div style="font-size:11px;color:${r.news>=0?'#4ade80':'#f87171'};margin-bottom:3px">NEWS</div><div style="font-family:var(--font-m);font-size:18px;font-weight:700;color:${r.news>=0?'#4ade80':'#f87171'}">${r.news>=0?'+':''}${(r.news*100).toFixed(1)}%</div></div>`:''}
+        <div style="font-size:16px;color:#555">+</div>
+        <div style="text-align:center;min-width:50px"><div style="font-size:11px;color:#c5a55a;margin-bottom:3px">DIV</div><div style="font-family:var(--font-m);font-size:18px;font-weight:700;color:#c5a55a">${(r.dividend*100).toFixed(1)}%</div></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:11px;color:#666;margin-right:8px">=</div>
+        <div class="ret-total" style="color:${totalColor}">${pos?'+':''}${(r.total*100).toFixed(1)}%</div>
+      </div>
+      ${reason?`<div id="reason-${thisReasonIdx}" style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;line-height:1.5;font-style:italic;${isRevealed?'color:#a8a29e;animation:fadeIn .4s ease':'color:rgba(255,255,255,.15);cursor:pointer'}" ${!isRevealed?'onclick="revealNextReason()"':''}>${isRevealed?'💡 '+reason:'💡 Why? Press spacebar to discuss...'}</div>`:''}</div>`}).join('')}</div>
+    ${!allRevealed?`<div id="reasonCounter" style="text-align:center;margin-top:16px;font-size:13px;color:#a8a29e">Press <kbd style="background:rgba(255,255,255,.1);padding:2px 8px;border-radius:4px;font-family:var(--font-m)">spacebar</kbd> to reveal the next explanation (${S._reasonsRevealed}/${reasonSectors.length})</div>`:''}
+    <div style="text-align:center;margin-top:${allRevealed?'28':'12'}px"><button id="commBtn" class="btn btn-gold" style="font-size:17px;padding:16px 44px;${allRevealed?'':'opacity:0.3;pointer-events:none'}" onclick="showComm()">📢 Commentary</button></div></div>`;
+  } else if(S.newsStep===3){// Commentary
+    content=`<div style="animation:slideUp .4s ease"><div class="commentary" style="background:rgba(255,255,255,.06);color:#e8e5e0;margin-bottom:28px">${S.commentary.map(l=>`<div style="margin-bottom:8px;font-size:18px">${l}</div>`).join('')}</div>
+    <div style="text-align:center"><button class="btn btn-green" style="font-size:17px;padding:16px 44px" onclick="finishRound()">✓ Back to Dashboard</button></div></div>`;
+  }
+  return `<div class="round-screen ${isBear?'bear':'bull'}"><div class="container" style="max-width:960px;margin:0 auto">${content}</div></div>`;
+}
+
+// ===================== RESULTS =====================
+function toggleResultPlayer(name){S._expandedResult=S._expandedResult===name?null:name;render();}
+
+function renderResults(){
+  const idxF=S.idxHist[S.idxHist.length-1];
+  const allEntries=[...S.players.map(p=>({name:p.name,val:p.history[p.history.length-1],isIdx:false})),{name:'Market Index',val:idxF,isIdx:true}].sort((a,b)=>b.val-a.val);
+  const beaters=allEntries.filter(e=>!e.isIdx&&e.val>idxF);
+  const rc=['#c5a55a','#94a3b8','#b45309','#475569','#475569','#475569','#475569','#475569','#475569','#475569'];
+  let playerRank=0;
+  const totalFeeDrag=Math.round((1-Math.pow(1-MGMT_FEE,S.cycle.length))*1000)/10;
+
+  function holdingBars(port,label){
+    const h=Object.entries(port).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+    return `<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:600;margin-bottom:6px">${label}</div>${h.map(([sid,amt])=>{
+      const s=sid==='cash'?{icon:'🏦',name:'Cash',color:'#059669'}:SECTORS.find(x=>x.id===sid);
+      if(!s)return '';
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="font-size:16px;width:22px;text-align:center">'+s.icon+'</span><span style="font-size:12px;font-weight:700;color:'+s.color+';min-width:100px">'+s.name+'</span><div style="flex:1;height:8px;background:#f0eeeb;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+((amt/BUDGET)*100)+'%;background:'+s.color+';border-radius:4px"></div></div><span style="font-family:var(--font-m);font-size:12px;font-weight:700;min-width:40px;text-align:right">$'+amt+'</span></div>';
+    }).join('')}</div>`;
+  }
+
+  return `<div class="container" style="animation:fadeIn .5s ease"><div style="text-align:center;margin-bottom:32px"><div style="font-size:56px;margin-bottom:8px">🏆</div><h1 style="font-size:38px;margin:0">Final Results</h1><div style="font-size:15px;color:var(--muted);margin-top:6px">${S.cycle.length} rounds · Game #${S.gameNum}</div></div>
+  <div class="card">
+    ${allEntries.map((e,i)=>{
+      if(e.isIdx) return `<div class="lb-row" style="background:#f5f4f0;border:2px dashed var(--border);animation:slideUp ${.2+i*.1}s ease both"><div class="lb-rank" style="background:var(--muted)">📊</div><div class="lb-name" style="color:var(--muted)">Market Index <span style="font-size:11px;font-weight:400">— equal weight, all 10 sectors, no fees</span></div><span class="lb-val" style="color:var(--muted)">$${e.val.toFixed(0)}</span></div>`;
+      playerRank++;const bi=e.val>idxF,pctR=((e.val-BUDGET)/BUDGET*100).toFixed(1);
+      const p=S.players.find(x=>x.name===e.name);
+      const isExpanded=S._expandedResult===e.name;
+      const didRebalance=JSON.stringify(p.portfolio)!==JSON.stringify(p.initialPortfolio);
+      return `<div style="animation:slideUp ${.2+i*.1}s ease both">
+        <div class="lb-row">
+          <div class="lb-rank" style="background:${rc[playerRank-1]||'#475569'}">${playerRank}</div>
+          <div class="lb-name">${e.name}</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button onclick="toggleResultPlayer('${e.name.replace(/'/g,"\\'")}');event.stopPropagation()" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:${isExpanded?'var(--accent)':'var(--card)'};color:${isExpanded?'#1a1a1a':'var(--muted)'};font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-b);white-space:nowrap">${isExpanded?'Hide':'See Portfolio'}</button>
+            <div style="text-align:right"><div class="lb-val">$${e.val.toFixed(0)}</div><div style="font-size:12px;color:${bi?'var(--green)':'var(--red)'}">${bi?'✓ Beat Index':'✗ Below Index'} · ${pctR>0?'+':''}${pctR}%</div></div>
+          </div>
+        </div>
+        ${isExpanded?`<div style="padding:14px 18px 16px 60px;background:#fafaf8;border-radius:0 0 12px 12px;margin-top:-6px;margin-bottom:8px;border:1px solid var(--border);border-top:none;animation:fadeIn .3s ease">
+          ${didRebalance?holdingBars(p.initialPortfolio,'ORIGINAL PORTFOLIO')+holdingBars(p.portfolio,'AFTER REBALANCE'):holdingBars(p.portfolio,'PORTFOLIO')}
+        </div>`:''}
+      </div>`;
+    }).join('')}
+  </div>
+  <div class="card" style="background:#1a1a1a;color:#e8e5e0"><h3 style="font-size:20px;margin:0 0 16px;color:var(--accent)">📚 What Did We Learn?</h3><div style="font-size:16px;line-height:1.8">
+    ${beaters.length===0
+      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. The index beat everyone.</strong> A simple, low-cost index fund — owning a little of everything — outperformed every active portfolio. This happens more often than you'd think: over any 15-year period, roughly 90% of professional money managers lose to the index.</p>`
+      :beaters.length<=Math.ceil(S.players.length/3)
+      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. The index beat almost everyone.</strong> Only ${beaters.length} of ${S.players.length} players beat the index. In real life, most professional money managers — people who do this for a living — can't beat it either.</p>`
+      :beaters.length<=S.players.length/2
+      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. Beating the index is possible — but hard to repeat.</strong> ${beaters.length} of ${S.players.length} players beat the index this game. But could they do it again? Research shows that managers who beat the index one year usually don't repeat it the next.</p>`
+      :`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. This time, picking winners worked — but don't count on it.</strong> ${beaters.length} of ${S.players.length} players beat the index! That feels great. But studies show that even when investors pick the right sectors, most fall behind over 10+ years. One good game doesn't make a strategy.</p>`
+    }
+    <p style="margin-bottom:12px"><strong style="color:var(--accent)">2. Nobody saw it coming.</strong> Think back to Round 1 — did anyone predict exactly what would happen? ${S.roundHist.length>0?'We saw '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bear').length+' bear rounds and '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bull').length+' bull rounds.':''} The economy surprised everyone, just like in real life.</p>
+    <p style="margin-bottom:12px"><strong style="color:var(--accent)">3. Offensive vs. Defensive is a real trade-off.</strong> High-beta sectors like Tech and Energy swing big both ways — great in expansions, painful in recessions. Low-beta sectors like Utilities and Healthcare are steadier. Neither is "better" — it depends on what happens next, and nobody knows that in advance.</p>
+    <p style="margin-bottom:12px"><strong style="color:var(--accent)">4. Dividends are your silent partner.</strong> Every round, dividend-paying sectors added a small bonus. Over ${S.cycle.length} rounds, those payments compound — especially during downturns when stock prices fall but dividends keep paying.</p>
+    <p style="margin-bottom:12px"><strong style="color:var(--accent)">5. Fees quietly eat your lunch.</strong> Every round, active portfolios paid a ${(MGMT_FEE*100).toFixed(1)}% management fee — about ${totalFeeDrag}% total over the game. The index paid nothing. In real life, the average mutual fund charges ~1% per year, which adds up to tens of thousands of dollars over a career.</p>
+    <p><strong style="color:var(--accent)">6. Time in the market beats timing the market.</strong> The best strategy for most people: buy a diversified, low-cost index fund, keep adding to it, and don't panic when markets drop. Boring? Yes. Effective? Extremely.</p>
+  </div></div>
+  <div style="display:flex;gap:12px;justify-content:center;margin-top:24px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="resetGame()">🔄 Play Again</button><button class="btn btn-outline" onclick="setState({screen:'play'})">← Dashboard</button></div></div>`;
+}
+
+// ===================== EVENTS =====================
+function attachEvents(){
+  // Cycle chip editing
+  if(S.dmMode)document.querySelectorAll('.cyc-chip').forEach(ch=>{ch.addEventListener('click',function(){const idx=Number(this.dataset.idx),curId=S.cycle[idx],ci=PHASES.findIndex(p=>p.id===curId);S.cycle[idx]=PHASES[(ci+1)%PHASES.length].id;playClick();render()})});
+}
+
+// Spacebar / Right Arrow / Tap to advance through gameplay
+function advanceGame(){
+  // If shuffle is running, cut it off immediately
+  if(S._battleInterval){finishBattle();return;}
+  // If on returns page with unrevealed reasons, reveal next one
+  if(S.screen==='round'&&S.newsStep===2&&S._reasonSectors&&S._reasonsRevealed<S._reasonSectors.length){
+    revealNextReason();return;
+  }
+  // Otherwise find the primary action button and click it
+  const btns=document.querySelectorAll('.btn-primary,.btn-gold,.btn-green');
+  for(let i=btns.length-1;i>=0;i--){
+    const b=btns[i];
+    if(!b.disabled&&b.offsetParent!==null&&b.textContent.trim()&&b.style.pointerEvents!=='none'){b.click();return;}
+  }
+}
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if(e.code==='Space'||e.code==='ArrowRight'){e.preventDefault();advanceGame();}
+});
+
+function revealNextReason(){
+  if(!S._reasonSectors||S._reasonsRevealed>=S._reasonSectors.length)return;
+  const idx=S._reasonsRevealed;
+  const sid=S._reasonSectors[idx];
+  const reason=S.curNews.reasons&&S.curNews.reasons[sid]?S.curNews.reasons[sid]:'';
+  const el=document.getElementById('reason-'+idx);
+  if(el&&reason){
+    el.style.color='#a8a29e';
+    el.style.cursor='default';
+    el.textContent='💡 '+reason;
+    el.onclick=null;
+    el.style.animation='fadeIn .4s ease';
+  }
+  S._reasonsRevealed++;
+  playReveal();
+  // Update counter
+  const counter=document.getElementById('reasonCounter');
+  if(counter){
+    if(S._reasonsRevealed>=S._reasonSectors.length){
+      counter.style.display='none';
+      // Enable commentary button
+      const commBtn=document.getElementById('commBtn');
+      if(commBtn){commBtn.style.opacity='1';commBtn.style.pointerEvents='auto';}
+    } else {
+      counter.textContent='Press spacebar to reveal the next explanation ('+S._reasonsRevealed+'/'+S._reasonSectors.length+')';
+    }
+  }
+}
+
+// ===================== ACTIONS =====================
+function loadDemoPlayers(){
+  const names=['Sarah','Marcus','Zoe','Chris','Aiden','Lily'];
+  const sids=SECTORS.map(s=>s.id);
+  function randPort(){
+    // Pick 3 random sectors
+    const shuffled=[...sids].sort(()=>Math.random()-.5);
+    const picks=shuffled.slice(0,3);
+    // Random cash: 0, 0, 0, 100, 150, 200, 250 (weighted toward no cash)
+    const cashOpts=[0,0,0,0,100,150,200,250];
+    const cash=cashOpts[Math.floor(Math.random()*cashOpts.length)];
+    const remaining=BUDGET-cash;
+    // Random split across 3 sectors in $50 increments
+    const slots=remaining/50;
+    let a=Math.floor(Math.random()*(slots-2))+1;
+    let b=Math.floor(Math.random()*(slots-a-1))+1;
+    let c=slots-a-b;
+    // Shuffle the allocation order
+    let amts=[a*50,b*50,c*50].sort(()=>Math.random()-.5);
+    const port={};
+    if(cash>0)port.cash=cash;
+    picks.forEach((sid,i)=>{port[sid]=amts[i]});
+    return port;
+  }
+  // Pick 4 random names
+  const shuffNames=[...names].sort(()=>Math.random()-.5).slice(0,4);
+  S.players=shuffNames.map(name=>{
+    const port=randPort();
+    return {name,portfolio:{...port},initialPortfolio:{...port},history:[BUDGET]};
+  });
+  playReveal();render();
+}
+function rmPlayer(i){S.players.splice(i,1);render()}
+function loadFromFirebase(){
+  const btn=document.getElementById('firebaseBtn');
+  if(btn){btn.textContent='⏳ Loading...';btn.disabled=true;}
+  fetch(FIREBASE_URL+'/portfolios.json')
+  .then(r=>r.json())
+  .then(data=>{
+    if(!data){if(btn){btn.textContent='No portfolios found';btn.disabled=false;setTimeout(()=>{btn.textContent='🔄 Load Portfolios from Players';},2000);}return;}
+    let added=0;
+    Object.values(data).forEach(d=>{
+      if(!d.name||!d.portfolio)return;
+      // Skip if already loaded
+      if(S.players.find(p=>p.name===d.name))return;
+      const port={...d.portfolio};
+      S.players.push({name:d.name,portfolio:{...port},initialPortfolio:{...port},history:[BUDGET]});
+      added++;
+    });
+    if(btn){btn.textContent='✅ Loaded '+added+' player'+(added!==1?'s':'');btn.style.background='var(--green)';btn.style.color='#fff';
+      setTimeout(()=>{btn.textContent='🔄 Refresh from Players';btn.style.background='';btn.style.color='';btn.disabled=false;},2000);}
+    playReveal();render();
+  })
+  .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error loading';btn.disabled=false;setTimeout(()=>{btn.textContent='🔄 Load Portfolios from Players';},2000);}});
+}
+function clearFirebase(){
+  if(!confirm('Clear all submitted portfolios from Firebase? This cannot be undone.'))return;
+  fetch(FIREBASE_URL+'/portfolios.json',{method:'DELETE'}).then(()=>{render()}).catch(err=>console.error(err));
+}
+function enableRebalance(){
+  // Write game state to Firebase so rebalance page can show performance
+  const idxV=S.idxHist[S.idxHist.length-1];
+  const playerStates={};
+  const sorted=[...S.players].map(p=>({name:p.name,val:p.history[p.history.length-1]})).sort((a,b)=>b.val-a.val);
+  sorted.forEach((p,i)=>{
+    const full=S.players.find(x=>x.name===p.name);
+    const safeName=p.name.replace(/[.#$\/\[\]]/g,'_');
+    playerStates[safeName]={name:p.name,currentValue:Math.round(p.val),rank:i+1,totalPlayers:sorted.length,portfolio:full.portfolio};
+  });
+  const gameState={
+    rebalanceOpen:true,
+    round:S.curRound,
+    totalRounds:S.cycle.length,
+    indexValue:Math.round(idxV),
+    players:playerStates,
+    timestamp:new Date().toISOString()
+  };
+  const btn=document.getElementById('rebalBtn');
+  if(btn){btn.textContent='⏳ Enabling...';btn.disabled=true;}
+  fetch(FIREBASE_URL+'/gameState.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(gameState)})
+  .then(r=>r.json())
+  .then(()=>{
+    if(btn){btn.textContent='✅ Rebalance Open — Tell Kids to Open Rebalance Page';btn.style.background='var(--green)';btn.style.color='#fff';}
+    S.rebalOpen=true;render();
+  })
+  .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error';btn.disabled=false;}});
+}
+function loadRebalanced(){
+  const btn=document.getElementById('rebalLoadBtn');
+  if(btn){btn.textContent='⏳ Loading...';btn.disabled=true;}
+  fetch(FIREBASE_URL+'/rebalanced.json')
+  .then(r=>r.json())
+  .then(data=>{
+    if(!data){if(btn){btn.textContent='No rebalanced portfolios yet';btn.disabled=false;setTimeout(()=>{btn.textContent='🔄 Load Rebalanced Portfolios';},2000);}return;}
+    let updated=0;
+    Object.values(data).forEach(d=>{
+      if(!d.name||!d.portfolio)return;
+      const player=S.players.find(p=>p.name===d.name);
+      if(player){player.portfolio={...d.portfolio};updated++;}
+    });
+    if(btn){btn.textContent='✅ Updated '+updated+' portfolio'+(updated!==1?'s':'');btn.style.background='var(--green)';btn.style.color='#fff';
+      setTimeout(()=>{btn.textContent='🔄 Refresh Rebalanced';btn.style.background='';btn.style.color='';btn.disabled=false;},2000);}
+    // Close rebalance window and reset for next potential rebalance
+    fetch(FIREBASE_URL+'/gameState/rebalanceOpen.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(false)});
+    fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'});
+    S.rebalOpen=false;
+    playReveal();render();
+  })
+  .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error loading';btn.disabled=false;}});
+}
+function addCycRound(){S.cycle.push('expansion');render()}
+function rmCycRound(){if(S.cycle.length>3){S.cycle.pop();render()}}
+function startGame(){S.screen='play';S.playTab='dashboard';S.curRound=0;render()}
+function startRound(){if(S.curRound>=S.cycle.length)return;const mag=genMag(),phase=S.cycle[S.curRound],news=getNews(phase,S.usedNews);if(news)S.usedNews.add(news.idx);S.mag=mag;S.curNews=news;S.scene=BULL_SCENES[S.curRound%BULL_SCENES.length];S.newsStep=0;S.battleDone=false;S.roundRet=null;S.commentary=[];S.screen='round';render()}
+function revealBattle(){
+  const btn=document.getElementById('battleBtn');if(btn)btn.disabled=true;
+  const emojis=['🐂','🐻','💥','⚡','🔥','💪','🎯','👊','🏆','💰'];
+  const shuffleEl=document.getElementById('battleShuffle');
+  if(!shuffleEl)return;
+  let count=0;const totalTicks=32;
+  S._battleInterval=setInterval(()=>{
+    const e1=emojis[Math.floor(Math.random()*emojis.length)],e2=emojis[Math.floor(Math.random()*emojis.length)];
+    shuffleEl.textContent=e1+' vs '+e2;
+    shuffleEl.style.transform=`scale(${1+Math.random()*0.2})`;
+    playClick();count++;
+    if(count>=totalTicks){finishBattle();}
+  },100);
+}
+function finishBattle(){
+  if(S._battleInterval){clearInterval(S._battleInterval);S._battleInterval=null;}
+  if(S.battleDone)return;
+  const ph=PHASES.find(c=>c.id===S.cycle[S.curRound]);
+  if(ph.mood==='bear')playBearWin();else playBullWin();
+  S.battleDone=true;render();
+}
+function advanceNews(){playReveal();S.newsStep=1;render()}
+function processRound(){const phase=S.cycle[S.curRound],ret=calcReturns(phase,S.curNews,S.mag);S.roundRet=ret;const eqP={};SECTORS.forEach(s=>eqP[s.id]=10);const idxR=portReturn(eqP,ret);
+  // Apply returns + management fee to players (index is fee-free)
+  S.players.forEach(p=>{const r=portReturn(p.portfolio,ret),last=p.history[p.history.length-1];const afterReturn=last*(1+r);const afterFee=afterReturn*(1-MGMT_FEE);p.history.push(afterFee)});
+  const lastI=S.idxHist[S.idxHist.length-1];S.idxHist.push(lastI*(1+idxR));
+  S.commentary=genCommentary(S.players,ret,idxR,phase);
+  S.roundHist.push({phase,news:S.curNews,mag:S.mag,returns:ret});
+  // Record sector PE history
+  const peSnap={};SECTORS.forEach(s=>{peSnap[s.id]=getPE(s.id,phase)});S.sectorHist.push({phase,pes:peSnap});
+  S._reasonsRevealed=0;S.newsStep=2;render()}
+function showComm(){S.newsStep=3;render()}
+function finishRound(){S.curRound++;S.screen='play';S.playTab='dashboard';render()}
+function showResults(){S.screen='results';render()}
+function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';render()}
+
+render();
+</script>
+</body>
+</html>
