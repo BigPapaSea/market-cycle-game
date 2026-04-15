@@ -111,6 +111,8 @@ h1,h2,h3{font-family:var(--font-d)}
 .cash-section::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(197,165,90,0.03) 20px,rgba(197,165,90,0.03) 40px);pointer-events:none}
 .submit-msg{font-size:13px;color:var(--muted);margin-top:8px}
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+.wait-pulse{animation:pulse 2s ease-in-out infinite}
 </style>
 </head>
 <body>
@@ -132,17 +134,72 @@ const SECTORS=[
 ];
 const FIREBASE_URL='https://market-game-mini-default-rtdb.firebaseio.com';
 const BUDGET=1000,MAX_SECTORS=3;
-let gameMode='loading',gameStateData=null,playerData=null,oldPortfolio={},cashAlloc=0,allocations={},existingNames=[];
+
+// ========== STATE ==========
+let gameMode='loading'; // loading, build, waiting, rebalance
+let gameStateData=null,playerData=null,oldPortfolio={},cashAlloc=0,allocations={},existingNames=[];
+let submittedName=sessionStorage.getItem('mcg_name')||'';
+let pollTimer=null;
 SECTORS.forEach(s=>allocations[s.id]=0);
 function getSectorTotal(){return Object.values(allocations).reduce((a,b)=>a+b,0)}
 function getTotal(){return cashAlloc+getSectorTotal()}
 function getSectorCount(){return Object.values(allocations).filter(v=>v>0).length}
 
+// ========== POLLING ==========
+function startPolling(){
+  stopPolling();
+  pollTimer=setInterval(pollFirebase,4000);
+}
+function stopPolling(){
+  if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+}
+function pollFirebase(){
+  fetch(FIREBASE_URL+'/gameState.json').then(r=>r.json()).then(gs=>{
+    if(gs&&gs.rebalanceOpen===true&&gs.players){
+      stopPolling();
+      gameStateData=gs;
+      // Auto-load this player's data if we know their name
+      const safeName=submittedName.replace(/[.#$\/\[\]]/g,'_');
+      const pd=gs.players[safeName]||Object.values(gs.players).find(p=>p.name.toLowerCase()===submittedName.toLowerCase());
+      if(pd){
+        playerData={...pd,indexValue:gs.indexValue,round:gs.round,totalRounds:gs.totalRounds};
+        oldPortfolio={...pd.portfolio};
+        cashAlloc=oldPortfolio.cash||0;
+        SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+        gameMode='rebalance';
+        renderApp();
+      } else {
+        // Name not found — show dropdown as fallback
+        gameMode='rebalance';
+        playerData=null;
+        renderApp();
+      }
+    }
+    // If rebalance not open, stay in waiting mode — keep polling
+  }).catch(()=>{});// Silent fail — keep polling
+}
+
 // ========== MODE DETECTION ==========
 function detectMode(){
   fetch(FIREBASE_URL+'/gameState.json').then(r=>r.json()).then(gs=>{
     if(gs&&gs.rebalanceOpen===true&&gs.players){
-      gameMode='rebalance';gameStateData=gs;renderApp();
+      gameStateData=gs;
+      // If we know the player, auto-load them
+      if(submittedName){
+        const safeName=submittedName.replace(/[.#$\/\[\]]/g,'_');
+        const pd=gs.players[safeName]||Object.values(gs.players).find(p=>p.name.toLowerCase()===submittedName.toLowerCase());
+        if(pd){
+          playerData={...pd,indexValue:gs.indexValue,round:gs.round,totalRounds:gs.totalRounds};
+          oldPortfolio={...pd.portfolio};
+          cashAlloc=oldPortfolio.cash||0;
+          SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+          gameMode='rebalance';renderApp();return;
+        }
+      }
+      gameMode='rebalance';renderApp();
+    } else if(submittedName){
+      // Returning player, no rebalance open — go to waiting
+      gameMode='waiting';renderApp();startPolling();
     } else {
       gameMode='build';
       fetch(FIREBASE_URL+'/portfolios.json').then(r=>r.json()).then(data=>{
@@ -150,7 +207,10 @@ function detectMode(){
         renderApp();
       }).catch(()=>renderApp());
     }
-  }).catch(()=>{gameMode='build';renderApp()});
+  }).catch(()=>{
+    if(submittedName){gameMode='waiting';renderApp();startPolling();}
+    else{gameMode='build';renderApp();}
+  });
 }
 
 // ========== RENDER ==========
@@ -158,11 +218,40 @@ function renderApp(){
   const app=document.getElementById('app');
   if(gameMode==='build'){
     app.innerHTML=renderBuildMode();document.title='Market Cycle Game — Build Your Portfolio';
+  } else if(gameMode==='waiting'){
+    app.innerHTML=renderWaiting();document.title='Market Cycle Game — Waiting...';
   } else if(gameMode==='rebalance'){
     app.innerHTML=playerData?renderRebalanceMode():renderRebalanceSelect();document.title='Market Cycle Game — Halftime Rebalance';
   }
-  // Initialize after DOM update
   setTimeout(()=>{if(document.getElementById('sectorsGrid')){renderSectors();updateBudgetDisplay();updateRiskMeter();}},10);
+}
+
+// ========== WAITING MODE ==========
+function renderWaiting(){
+  const parts=[];
+  // Try to show what they picked
+  const savedPort=sessionStorage.getItem('mcg_portfolio');
+  if(savedPort){
+    try{
+      const port=JSON.parse(savedPort);
+      Object.entries(port).forEach(([sid,amt])=>{
+        if(amt>0){const s=sid==='cash'?{icon:'🏦',name:'Cash'}:SECTORS.find(x=>x.id===sid);if(s)parts.push(s.icon+' '+s.name+': $'+amt);}
+      });
+    }catch(e){}
+  }
+  return '<div style="animation:fadeIn .4s ease;text-align:center;padding:60px 24px">'+
+    '<div class="header"><div class="header-sub">MINI RETREAT 2026</div><h1>🐂 The Market Cycle Game 🐻</h1></div>'+
+    '<div style="background:var(--card);border:2px solid var(--green);border-radius:20px;padding:40px 32px;max-width:520px;margin:0 auto 28px">'+
+      '<div style="font-size:48px;margin-bottom:12px">✅</div>'+
+      '<div style="font-family:var(--font-d);font-size:26px;font-weight:900;color:var(--green);margin-bottom:8px">'+submittedName+'\'s Portfolio is Locked In!</div>'+
+      (parts.length>0?'<div style="font-size:14px;color:var(--muted);margin-bottom:16px">'+parts.join(' &middot; ')+'</div>':'')+
+      '<div style="height:1px;background:var(--border);margin:16px 0"></div>'+
+      '<div class="wait-pulse" style="font-size:48px;margin:20px 0">📺</div>'+
+      '<div style="font-family:var(--font-d);font-size:20px;font-weight:900;margin-bottom:6px">Watch the Big Screen!</div>'+
+      '<div style="font-size:15px;color:var(--muted);line-height:1.6">The Dungeon Master is running the game.<br>When it\'s time to rebalance, this page will update automatically.</div>'+
+      '<div style="margin-top:20px;font-size:12px;color:var(--muted);opacity:.5">Checking every few seconds...</div>'+
+    '</div>'+
+  '</div>';
 }
 
 // ========== BUILD MODE ==========
@@ -199,6 +288,7 @@ function selectPlayer(){
   oldPortfolio={...pd.portfolio};
   cashAlloc=oldPortfolio.cash||0;
   SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+  submittedName=name;sessionStorage.setItem('mcg_name',name);
   renderApp();
 }
 
@@ -279,7 +369,6 @@ function handleSlider(sid,v){
   card.querySelector('.alloc-amount').textContent='$'+val;card.querySelector('.alloc-amount').style.color=val>0?sec.color:'#d1cdc7';
   card.querySelector('.alloc-fill').style.width=pct+'%';card.querySelector('.alloc-thumb').style.left=pct+'%';card.querySelector('.alloc-input').value=val;
   card.classList.toggle('has-alloc',val>0);card.style.borderColor=val>0?sec.color+'60':'';
-  // Update prev strip change indicator
   if(gameMode==='rebalance'){const ps=card.querySelector('.prev-strip-change');if(ps){const ov=oldPortfolio[sid]||0;if(val!==ov){ps.style.color=val>ov?'#4ade80':'#f87171';ps.textContent=(val>ov?'↑':'↓')+' $'+Math.abs(val-ov);}else ps.textContent='';}}
   const nC=getSectorCount();
   SECTORS.forEach(s=>{const c=document.getElementById('card-'+s.id);if(c){const lk=allocations[s.id]===0&&nC>=MAX_SECTORS;c.style.opacity=lk?'0.4':'1';const inp=c.querySelector('.alloc-input');if(inp)inp.max=lk?'0':'1000';}});
@@ -350,10 +439,14 @@ function submitPortfolio(){
   fetch(FIREBASE_URL+'/portfolios/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
   .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
   .then(()=>{
-    btn.textContent='✅ Portfolio Locked In!';btn.style.background='var(--green)';btn.style.color='#fff';
-    const parts=[];if(cashAlloc>0)parts.push('🏦 Cash: $'+cashAlloc);
-    Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0){const s=SECTORS.find(x=>x.id===sid);parts.push(s.icon+' '+s.name+': $'+amt)}});
-    document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ '+name+'\'s portfolio is locked in and sent to the Dungeon Master!</strong><br>'+parts.join(' · ');
+    // Save name and portfolio for waiting screen
+    submittedName=name;
+    sessionStorage.setItem('mcg_name',name);
+    sessionStorage.setItem('mcg_portfolio',JSON.stringify(portfolio));
+    // Transition to waiting mode
+    gameMode='waiting';
+    renderApp();
+    startPolling();
   })
   .catch(err=>{console.error('Firebase write failed:',err);btn.textContent='⚠️ Error — try again';btn.disabled=false;btn.style.background='var(--red)';btn.style.color='#fff';setTimeout(()=>{btn.className='submit-btn ready';btn.textContent='✓ Lock in '+name+"'s Portfolio";btn.style.background='';btn.style.color=''},3000)});
 }
@@ -365,7 +458,10 @@ function keepPortfolio(){
   const btn=document.querySelector('.keep-btn');btn.textContent='⏳ Saving...';btn.disabled=true;
   fetch(FIREBASE_URL+'/rebalanced/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
   .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
-  .then(()=>{btn.textContent='✅ Keeping Current Portfolio';btn.style.borderColor='var(--green)';btn.style.color='var(--green)';document.getElementById('submitBtn').style.display='none';document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ Portfolio unchanged — locked in for the second half!</strong>'})
+  .then(()=>{
+    sessionStorage.setItem('mcg_portfolio',JSON.stringify(oldPortfolio));
+    gameMode='waiting';renderApp();startPolling();
+  })
   .catch(err=>{console.error(err);btn.textContent='⚠️ Error — try again';btn.disabled=false});
 }
 
@@ -379,13 +475,8 @@ function submitRebalance(){
   fetch(FIREBASE_URL+'/rebalanced/'+safeName+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
   .then(r=>{if(!r.ok)throw new Error('Firebase error');return r.json()})
   .then(()=>{
-    btn.textContent='✅ New Portfolio Locked In!';btn.style.background='var(--green)';btn.style.color='#fff';
-    const kb=document.querySelector('.keep-btn');if(kb)kb.style.display='none';
-    const parts=[];if(cashAlloc>0)parts.push('🏦 Cash: $'+cashAlloc);
-    Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0){const s=SECTORS.find(x=>x.id===sid);parts.push(s.icon+' '+s.name+': $'+amt)}});
-    const changes=[];Object.entries(allocations).forEach(([sid,amt])=>{const old=oldPortfolio[sid]||0;if(amt!==old){const s=SECTORS.find(x=>x.id===sid);changes.push(s.icon+' '+s.name+': '+(amt-old>0?'+':'')+'$'+(amt-old))}});
-    const oc=oldPortfolio.cash||0;if(cashAlloc!==oc)changes.push('🏦 Cash: '+(cashAlloc-oc>0?'+':'')+'$'+(cashAlloc-oc));
-    document.getElementById('submitMsg').innerHTML='<strong style="color:var(--green)">✓ '+name+"'s new portfolio is locked in!</strong><br>"+parts.join(' · ')+(changes.length>0?'<br><span style="font-size:12px;color:var(--muted)">Changes: '+changes.join(', ')+'</span>':'');
+    sessionStorage.setItem('mcg_portfolio',JSON.stringify(portfolio));
+    gameMode='waiting';renderApp();startPolling();
   })
   .catch(err=>{console.error(err);btn.textContent='⚠️ Error — try again';btn.disabled=false;btn.style.background='var(--red)';btn.style.color='#fff';setTimeout(()=>{btn.className='submit-btn ready';btn.textContent='✓ Lock in New Portfolio';btn.style.background='';btn.style.color=''},3000)});
 }
