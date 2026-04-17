@@ -190,173 +190,173 @@ const MULTS={
 };
 
 const NEWS = [
-  {headline:"TECH GIANTS SHATTER EARNINGS RECORDS",sub:"Capital floods into tech; healthcare budgets squeezed",year:"2024",paper:"WALL STREET JOURNAL",phases:["expansion","minor_expansion"],
+  {headline:"TECH GIANTS SHATTER EARNINGS RECORDS",mood:"bull",sub:"Capital floods into tech; healthcare budgets squeezed",year:"2024",paper:"WALL STREET JOURNAL",phases:["expansion","minor_expansion"],
     effects:{tech:0.06,disc:0.03,health:-0.03},
     reasons:{tech:"Record profits attract investors — capital pours into the sector",disc:"Tech spending spills over to online retail platforms",health:"Investment dollars shift away from healthcare into faster-growing tech"}},
-  {headline:"HOUSING STARTS REACH 15-YEAR HIGH",sub:"Construction booms; lumber costs spike; healthcare budgets squeezed",year:"2021",paper:"BLOOMBERG",phases:["expansion"],
+  {headline:"HOUSING STARTS REACH 15-YEAR HIGH",mood:"bull",sub:"Construction booms; lumber costs spike; healthcare budgets squeezed",year:"2021",paper:"BLOOMBERG",phases:["expansion"],
     effects:{mat:0.05,ind:0.04,health:-0.02},
     reasons:{mat:"Lumber, steel, and concrete demand surges for new homes",ind:"Builders and heavy equipment makers hire aggressively",health:"Healthcare budgets squeezed as consumers redirect spending to housing"}},
-  {headline:"OIL SOARS TO $120 AS TENSIONS RISE",sub:"Energy stocks surge; transport and retail take a hit",year:"2022",paper:"REUTERS",phases:["expansion","peak"],
+  {headline:"OIL SOARS TO $120 AS TENSIONS RISE",mood:"bear",sub:"Energy stocks surge; transport and retail take a hit",year:"2022",paper:"REUTERS",phases:["expansion","peak"],
     effects:{energy:0.07,ind:-0.04,tele:-0.03},
     reasons:{energy:"Oil producers earn massive profits at $120/barrel",ind:"Fuel costs spike for trucking, shipping, and factories",tele:"Cell tower and data center operations face surging energy bills"}},
-  {headline:"FED SIGNALS RATE HIKES — WALL STREET BRACES",sub:"Banks profit from higher rates; growth stocks sell off",year:"2022",paper:"FINANCIAL TIMES",phases:["peak"],
+  {headline:"FED SIGNALS RATE HIKES — WALL STREET BRACES",mood:"bear",sub:"Banks profit from higher rates; growth stocks sell off",year:"2022",paper:"FINANCIAL TIMES",phases:["peak"],
     effects:{fin:0.05,tech:-0.06,mat:-0.04},
     reasons:{fin:"Banks earn more on every loan when interest rates rise",tech:"Higher rates crush valuations of companies whose profits are years away",mat:"Higher borrowing costs slam capital-intensive mining and manufacturing operations"}},
-  {headline:"CAR SALES PLUMMET AS CONSUMERS PULL BACK",sub:"Dealerships empty; banks tighten auto lending",year:"2019",paper:"DETROIT FREE PRESS",phases:["peak","minor_recession"],
+  {headline:"CAR SALES PLUMMET AS CONSUMERS PULL BACK",mood:"bear",sub:"Dealerships empty; banks tighten auto lending",year:"2019",paper:"DETROIT FREE PRESS",phases:["peak","minor_recession"],
     effects:{disc:-0.04,fin:-0.03,health:0.02},
     reasons:{disc:"Auto dealers see empty lots — consumers stop making big purchases",fin:"Banks tighten auto lending as the risk of defaults rises",health:"Nervous investors rotate into defensive healthcare stocks"}},
-  {headline:"TRADE WAR ESCALATES — TARIFFS HIT 25%",sub:"Import costs spike; domestic staples benefit from protection",year:"2019",paper:"THE ECONOMIST",phases:["minor_recession"],
+  {headline:"TRADE WAR ESCALATES — TARIFFS HIT 25%",mood:"bear",sub:"Import costs spike; domestic staples benefit from protection",year:"2019",paper:"THE ECONOMIST",phases:["minor_recession"],
     effects:{ind:-0.05,mat:-0.04,staples:0.03},
     reasons:{ind:"Tariffs disrupt global supply chains for manufacturers",mat:"Export restrictions hit commodity producers who sell overseas",staples:"Domestic food and household brands benefit from tariff protection"}},
-  {headline:"PANDEMIC SHUTS DOWN GLOBAL ECONOMY",sub:"Travel and retail crushed; remote work booms",year:"2020",paper:"NEW YORK TIMES",phases:["minor_recession","major_recession"],
+  {headline:"PANDEMIC SHUTS DOWN GLOBAL ECONOMY",mood:"bear",sub:"Travel and retail crushed; remote work booms",year:"2020",paper:"NEW YORK TIMES",phases:["minor_recession","major_recession"],
     effects:{disc:-0.06,energy:-0.06,tech:0.05},
     reasons:{disc:"Stores close, travel halts — consumers can't spend on anything fun",energy:"Nobody is driving or flying — oil demand collapses worldwide",tech:"Remote work drives explosive demand for laptops, cloud, and Zoom"}},
-  {headline:"BANKS COLLAPSE — MORTGAGE CRISIS SPREADS",sub:"Credit markets freeze; utilities hold steady",year:"2008",paper:"WALL STREET JOURNAL",phases:["major_recession"],
+  {headline:"BANKS COLLAPSE — MORTGAGE CRISIS SPREADS",mood:"bear",sub:"Credit markets freeze; utilities hold steady",year:"2008",paper:"WALL STREET JOURNAL",phases:["major_recession"],
     effects:{fin:-0.08,ind:-0.03,util:0.03},
     reasons:{fin:"Banks fail as mortgage-backed securities become worthless",ind:"Construction halts as banks stop lending to builders",util:"Regulated utilities with steady income become safe havens"}},
-  {headline:"MARKETS CRASH 20% IN SINGLE WEEK",sub:"Panic selling; only essentials survive",year:"2020",paper:"CNBC",phases:["major_recession"],
+  {headline:"MARKETS CRASH 20% IN SINGLE WEEK",mood:"bear",sub:"Panic selling; only essentials survive",year:"2020",paper:"CNBC",phases:["major_recession"],
     effects:{tech:-0.05,fin:-0.04,staples:0.04},
     reasons:{tech:"High-flying tech stocks fall the furthest in panic selling",fin:"Banks face margin calls and worry about which firms will survive",staples:"Grocery stores and household goods are recession-proof"}},
-  {headline:"OIL PRICES GO NEGATIVE FOR FIRST TIME",sub:"Storage full; producers devastated; renewables look cheap",year:"2020",paper:"BLOOMBERG",phases:["major_recession","trough"],
+  {headline:"OIL PRICES GO NEGATIVE FOR FIRST TIME",mood:"bear",sub:"Storage full; producers devastated; renewables look cheap",year:"2020",paper:"BLOOMBERG",phases:["major_recession","trough"],
     effects:{energy:-0.10,mat:-0.03,util:0.04},
     reasons:{energy:"Storage tanks are full — producers literally pay people to take their oil",mat:"The entire commodity complex collapses alongside oil prices",util:"Cheap energy benefits utilities — and investors flock to safety"}},
-  {headline:"UNEMPLOYMENT HITS 10% — BREADLINES RETURN",sub:"Spending collapses; only groceries and phone bills get paid",year:"2009",paper:"ASSOCIATED PRESS",phases:["trough"],
+  {headline:"UNEMPLOYMENT HITS 10% — BREADLINES RETURN",mood:"bear",sub:"Spending collapses; only groceries and phone bills get paid",year:"2009",paper:"ASSOCIATED PRESS",phases:["trough"],
     effects:{disc:-0.04,ind:-0.03,tele:0.03},
     reasons:{disc:"Unemployed people eliminate all non-essential spending",ind:"Factories and construction sites lay off workers en masse",tele:"Phone and internet bills are among the last payments people skip"}},
-  {headline:"GOVERNMENT PASSES $2 TRILLION STIMULUS",sub:"Markets rally; inflation hawks warn of overheating",year:"2020",paper:"WASHINGTON POST",phases:["trough","early_recovery"],
+  {headline:"GOVERNMENT PASSES $2 TRILLION STIMULUS",mood:"bull",sub:"Markets rally; inflation hawks warn of overheating",year:"2020",paper:"WASHINGTON POST",phases:["trough","early_recovery"],
     effects:{disc:0.05,ind:0.04,util:-0.03},
     reasons:{disc:"Stimulus checks hit bank accounts — consumers go on a spending spree",ind:"Government contracts and infrastructure spending pour in",util:"Investors leave boring safe havens for higher-growth recovery plays"}},
-  {headline:"VACCINE APPROVED — MARKETS SOAR",sub:"Travel rebounds; safe havens sell off",year:"2020",paper:"NEW YORK TIMES",phases:["early_recovery"],
+  {headline:"VACCINE APPROVED — MARKETS SOAR",mood:"bull",sub:"Travel rebounds; safe havens sell off",year:"2020",paper:"NEW YORK TIMES",phases:["early_recovery"],
     effects:{disc:0.06,energy:0.04,util:-0.02},
     reasons:{disc:"Reopening drives revenge spending — travel, dining, and shopping surge",energy:"People start driving and flying again — oil demand rebounds",util:"Investors dump safe-haven utilities for exciting reopening stocks"}},
-  {headline:"INFRASTRUCTURE BILL SIGNED — $1.2 TRILLION",sub:"Roads, bridges, broadband; tech left out",year:"2021",paper:"POLITICO",phases:["early_recovery","minor_expansion"],
+  {headline:"INFRASTRUCTURE BILL SIGNED — $1.2 TRILLION",mood:"bull",sub:"Roads, bridges, broadband; tech left out",year:"2021",paper:"POLITICO",phases:["early_recovery","minor_expansion"],
     effects:{ind:0.06,mat:0.05,tech:-0.02},
     reasons:{ind:"Construction companies win massive government contracts for roads and bridges",mat:"Steel, concrete, and building materials face huge new demand",tech:"Tech companies were left out of the spending — bad lobbying"}},
-  {headline:"CRYPTO HITS ALL-TIME HIGH",sub:"Speculative frenzy; safe stocks lose appeal",year:"2021",paper:"COINDESK",phases:["expansion"],
+  {headline:"CRYPTO HITS ALL-TIME HIGH",mood:"bull",sub:"Speculative frenzy; safe stocks lose appeal",year:"2021",paper:"COINDESK",phases:["expansion"],
     effects:{tech:0.04,fin:0.03,staples:-0.03},
     reasons:{tech:"Crypto exchanges and blockchain companies ride the speculative wave",fin:"Trading desks and banks profit from crypto transaction fees",staples:"Boring grocery stocks lose appeal when crypto doubles overnight"}},
-  {headline:"DRUG PRICING REFORM CRUSHES PHARMA",sub:"Government caps drug prices; consumer staples rally",year:"2023",paper:"POLITICO",phases:["minor_recession"],
+  {headline:"DRUG PRICING REFORM CRUSHES PHARMA",mood:"bear",sub:"Government caps drug prices; consumer staples rally",year:"2023",paper:"POLITICO",phases:["minor_recession"],
     effects:{health:-0.05,staples:0.03,disc:0.02},
     reasons:{health:"Government caps drug prices — pharmaceutical profit margins collapse",staples:"Lower drug costs give consumers more money for groceries and basics",disc:"Savings on medicine redirect to discretionary shopping and dining"}},
-  {headline:"ELECTRIC VEHICLE SALES DOUBLE",sub:"Battery metals boom; oil faces existential threat",year:"2023",paper:"MOTOR TREND",phases:["expansion","peak"],
+  {headline:"ELECTRIC VEHICLE SALES DOUBLE",mood:"bull",sub:"Battery metals boom; oil faces existential threat",year:"2023",paper:"MOTOR TREND",phases:["expansion","peak"],
     effects:{mat:0.05,energy:-0.05,tech:0.02},
     reasons:{mat:"Lithium, cobalt, and battery metals mining booms",energy:"Oil companies face an existential threat as cars go electric",tech:"EV software, chips, and self-driving technology companies benefit"}},
-  {headline:"CHIP SHORTAGE ENDS — FACTORIES ROAR",sub:"Tech and auto celebrate; energy demand softens",year:"2023",paper:"FINANCIAL TIMES",phases:["minor_expansion"],
+  {headline:"CHIP SHORTAGE ENDS — FACTORIES ROAR",mood:"bull",sub:"Tech and auto celebrate; energy demand softens",year:"2023",paper:"FINANCIAL TIMES",phases:["minor_expansion"],
     effects:{tech:0.04,ind:0.03,energy:-0.03},
     reasons:{tech:"Chip makers ramp production — device manufacturers celebrate",ind:"Manufacturing lines run at full capacity with steady chip supply",energy:"More efficient chips reduce industrial energy consumption"}},
-  {headline:"GREEN ENERGY INVESTMENT HITS RECORD",sub:"Solar undercuts fossil fuels; oil loses investors",year:"2023",paper:"THE GUARDIAN",phases:["minor_expansion","expansion"],
+  {headline:"GREEN ENERGY INVESTMENT HITS RECORD",mood:"bull",sub:"Solar undercuts fossil fuels; oil loses investors",year:"2023",paper:"THE GUARDIAN",phases:["minor_expansion","expansion"],
     effects:{util:0.05,mat:0.04,energy:-0.05},
     reasons:{util:"Solar and wind power utilities attract record investment",mat:"Copper, silicon, and rare earth metals surge on renewable demand",energy:"Fossil fuel companies lose investors to clean energy alternatives"}},
-  {headline:"HOUSING PRICES UP 40% — CRISIS",sub:"Banks profit; consumers stretched to breaking point",year:"2022",paper:"ZILLOW REPORT",phases:["peak"],
+  {headline:"HOUSING PRICES UP 40% — CRISIS",mood:"bear",sub:"Banks profit; consumers stretched to breaking point",year:"2022",paper:"ZILLOW REPORT",phases:["peak"],
     effects:{fin:0.04,disc:-0.04,health:-0.02},
     reasons:{fin:"Banks profit from soaring home values and a refinancing boom",disc:"Consumers so stretched by housing costs they cut everything else",health:"Healthcare spending squeezed as mortgage payments dominate budgets"}},
-  {headline:"MAJOR CYBERATTACK DISRUPTS PIPELINE",sub:"Gas prices spike; cybersecurity rallies",year:"2021",paper:"CNN",phases:["minor_recession"],
+  {headline:"MAJOR CYBERATTACK DISRUPTS PIPELINE",mood:"bear",sub:"Gas prices spike; cybersecurity rallies",year:"2021",paper:"CNN",phases:["minor_recession"],
     effects:{energy:0.06,tech:0.04,ind:-0.04},
     reasons:{energy:"Pipeline shutdown spikes gas prices — energy stocks surge",tech:"Cybersecurity companies see a massive surge in demand overnight",ind:"Supply chain disruption halts factories waiting for fuel deliveries"}},
-  {headline:"WAR IN EUROPE — MARKETS PLUNGE",sub:"Energy spikes; consumer confidence collapses",year:"2022",paper:"BBC NEWS",phases:["major_recession"],
+  {headline:"WAR IN EUROPE — MARKETS PLUNGE",mood:"bear",sub:"Energy spikes; consumer confidence collapses",year:"2022",paper:"BBC NEWS",phases:["major_recession"],
     effects:{energy:0.07,disc:-0.03,fin:-0.04},
     reasons:{energy:"Global oil and gas prices spike on supply disruption fears",disc:"Consumer confidence collapses — nobody shops during a war scare",fin:"European bank exposure creates contagion fears worldwide"}},
-  {headline:"HEALTHCARE STAFFING CRISIS DEEPENS",sub:"Nurse shortages; telehealth booms",year:"2022",paper:"REUTERS",phases:["early_recovery"],
+  {headline:"HEALTHCARE STAFFING CRISIS DEEPENS",mood:"bear",sub:"Nurse shortages; telehealth booms",year:"2022",paper:"REUTERS",phases:["early_recovery"],
     effects:{health:-0.03,tele:0.03,staples:0.02},
     reasons:{health:"Nurse shortages drive labor costs up — hospital profits collapse",tele:"Telehealth platforms boom as in-person care becomes harder to find",staples:"Defensive positioning as healthcare uncertainty makes investors nervous"}},
-  {headline:"GOVERNMENT FAILS TO PASS BUDGET",sub:"Shutdown fears rattle markets; safe havens rally",year:"2023",paper:"POLITICO",phases:["minor_expansion"],
+  {headline:"GOVERNMENT FAILS TO PASS BUDGET",mood:"bear",sub:"Shutdown fears rattle markets; safe havens rally",year:"2023",paper:"POLITICO",phases:["minor_expansion"],
     effects:{ind:-0.04,mat:-0.03,util:0.03},
     reasons:{ind:"Government contracts frozen — infrastructure projects stall overnight",mat:"Public construction projects halted without Congressional funding",util:"Regulated utilities are unaffected — investors seek their stability"}},
-  {headline:"AI REVOLUTION TRANSFORMS INDUSTRY",sub:"Automation fears hit labor-heavy sectors",year:"2024",paper:"WIRED",phases:["expansion"],
+  {headline:"AI REVOLUTION TRANSFORMS INDUSTRY",mood:"bull",sub:"Automation fears hit labor-heavy sectors",year:"2024",paper:"WIRED",phases:["expansion"],
     effects:{tech:0.06,health:0.03,ind:-0.04},
     reasons:{tech:"AI chip makers and software companies see explosive demand",health:"AI discovers new drugs faster and cuts diagnostic costs",ind:"Automation threatens to replace factory and warehouse workers"}},
-  {headline:"CONSUMER CONFIDENCE HITS ROCK BOTTOM",sub:"Savings gone; only essentials survive",year:"2008",paper:"GALLUP",phases:["trough"],
+  {headline:"CONSUMER CONFIDENCE HITS ROCK BOTTOM",mood:"bear",sub:"Savings gone; only essentials survive",year:"2008",paper:"GALLUP",phases:["trough"],
     effects:{disc:-0.04,fin:-0.02,staples:0.03},
     reasons:{disc:"Consumers stop buying anything beyond absolute necessities",fin:"Loan defaults spike as people lose faith in the economy",staples:"Groceries and household goods are the last things people stop buying"}},
-  {headline:"RETAIL SALES SURGE — REVENGE SPENDING",sub:"Consumers splurge; safe stocks sell off",year:"2021",paper:"BLOOMBERG",phases:["early_recovery","minor_expansion"],
+  {headline:"RETAIL SALES SURGE — REVENGE SPENDING",mood:"bull",sub:"Consumers splurge; safe stocks sell off",year:"2021",paper:"BLOOMBERG",phases:["early_recovery","minor_expansion"],
     effects:{disc:0.06,fin:0.03,staples:-0.03},
     reasons:{disc:"Pent-up demand explodes — consumers splurge on clothes, travel, and dining",fin:"Credit card spending surges — banks earn record transaction fees",staples:"Consumers upgrade from generic basics to premium brands and experiences"}},
-  {headline:"INFLATION HITS 9% — WORST IN 40 YEARS",sub:"Commodities win; growth loses",year:"2022",paper:"BUREAU OF LABOR STATISTICS",phases:["peak","minor_recession"],
+  {headline:"INFLATION HITS 9% — WORST IN 40 YEARS",mood:"bear",sub:"Commodities win; growth loses",year:"2022",paper:"BUREAU OF LABOR STATISTICS",phases:["peak","minor_recession"],
     effects:{energy:0.05,tech:-0.05,tele:-0.04},
     reasons:{energy:"Oil and commodity companies benefit directly from rising prices",tech:"Sky-high interest rates to fight inflation crush growth stock valuations",tele:"Telecom can\'t raise phone bills fast enough to keep up with inflation"}},
   // === BATCH 2: 28 additional events ===
-  {headline:"COVID LOCKDOWNS SHUT DOWN THE WORLD",sub:"Hospitals overwhelmed; everything else closes",year:"2020",paper:"WORLD HEALTH ORGANIZATION",phases:["major_recession","trough"],
+  {headline:"COVID LOCKDOWNS SHUT DOWN THE WORLD",mood:"bear",sub:"Hospitals overwhelmed; everything else closes",year:"2020",paper:"WORLD HEALTH ORGANIZATION",phases:["major_recession","trough"],
     effects:{health:0.05,disc:-0.04,energy:-0.04},
     reasons:{health:"Hospitals, drug makers, and medical supply companies surge on pandemic demand",disc:"Stores, restaurants, and entertainment shut down entirely — zero revenue",energy:"Nobody is driving or flying — oil demand collapses overnight"}},
-  {headline:"TIKTOK FACES U.S. BAN — 150M USERS PANICKED",sub:"Social media shakeup; telecom wins eyeballs",year:"2024",paper:"CNN",phases:["peak","minor_recession"],
+  {headline:"TIKTOK FACES U.S. BAN — 150M USERS PANICKED",mood:"bear",sub:"Social media shakeup; telecom wins eyeballs",year:"2024",paper:"CNN",phases:["peak","minor_recession"],
     effects:{tech:-0.04,tele:0.04,staples:-0.03},
     reasons:{tech:"Advertising revenue threatened as the biggest social platform faces shutdown",tele:"Phone carriers and rival platforms absorb migrating users and ad dollars",staples:"Consumer goods brands that used TikTok for cheap marketing lose their best advertising channel"}},
-  {headline:"FACEBOOK HIT WITH RECORD $5 BILLION FINE",sub:"Privacy crackdown rattles Big Tech; banks benefit",year:"2019",paper:"FEDERAL TRADE COMMISSION",phases:["minor_recession"],
+  {headline:"FACEBOOK HIT WITH RECORD $5 BILLION FINE",mood:"bear",sub:"Privacy crackdown rattles Big Tech; banks benefit",year:"2019",paper:"FEDERAL TRADE COMMISSION",phases:["minor_recession"],
     effects:{tech:-0.05,fin:0.03,tele:0.02},
     reasons:{tech:"Massive fine plus new regulations threaten the entire ad-supported tech model",fin:"Banks positioned as safe, regulated alternatives attract cautious investors",tele:"Telecom companies already follow strict privacy rules — they look stable by comparison"}},
-  {headline:"IRAN BLOCKS STRAIT OF HORMUZ — OIL SHIPMENTS HALTED",sub:"20% of world oil supply threatened; panic buying begins",year:"2024",paper:"REUTERS",phases:["peak","major_recession"],
+  {headline:"IRAN BLOCKS STRAIT OF HORMUZ — OIL SHIPMENTS HALTED",mood:"bear",sub:"20% of world oil supply threatened; panic buying begins",year:"2024",paper:"REUTERS",phases:["peak","major_recession"],
     effects:{energy:0.07,ind:-0.05,mat:-0.03},
     reasons:{energy:"Oil prices skyrocket as the world\'s most important shipping lane closes",ind:"Factories and shipping companies face crippling fuel costs overnight",mat:"Raw material shipping routes disrupted — commodity import costs spike"}},
-  {headline:"APPLE UNVEILS DEVICE THAT CHANGES EVERYTHING",sub:"Tech stocks soar; old industries feel left behind",year:"2024",paper:"THE VERGE",phases:["expansion","minor_expansion"],
+  {headline:"APPLE UNVEILS DEVICE THAT CHANGES EVERYTHING",mood:"bull",sub:"Tech stocks soar; old industries feel left behind",year:"2024",paper:"THE VERGE",phases:["expansion","minor_expansion"],
     effects:{tech:0.05,disc:0.03,ind:-0.03},
     reasons:{tech:"Apple\'s new product creates a wave of excitement across the entire tech sector",disc:"Consumer electronics retailers see massive pre-order demand",ind:"Traditional manufacturers worry about being disrupted by the new technology"}},
-  {headline:"SILICON VALLEY BANK COLLAPSES — BANK RUN FEARS SPREAD",sub:"Tech startups scramble; safe havens surge",year:"2023",paper:"WALL STREET JOURNAL",phases:["major_recession"],
+  {headline:"SILICON VALLEY BANK COLLAPSES — BANK RUN FEARS SPREAD",mood:"bear",sub:"Tech startups scramble; safe havens surge",year:"2023",paper:"WALL STREET JOURNAL",phases:["major_recession"],
     effects:{fin:-0.06,tech:-0.03,util:0.04},
     reasons:{fin:"Bank failure triggers panic — depositors yank money from regional banks everywhere",tech:"Startups that banked at SVB can\'t make payroll; venture funding freezes",util:"Investors flee to the safest, most boring stocks they can find — utilities"}},
-  {headline:"NETFLIX LOSES 1 MILLION SUBSCRIBERS IN ONE QUARTER",sub:"Streaming bubble bursts; traditional media rebounds",year:"2022",paper:"VARIETY",phases:["minor_recession","peak"],
+  {headline:"NETFLIX LOSES 1 MILLION SUBSCRIBERS IN ONE QUARTER",mood:"bear",sub:"Streaming bubble bursts; traditional media rebounds",year:"2022",paper:"VARIETY",phases:["minor_recession","peak"],
     effects:{disc:-0.03,tele:0.03,staples:0.02},
     reasons:{disc:"The streaming model is questioned — consumers are cutting subscriptions to save money",tele:"Cable and internet providers suddenly don\'t look so outdated after all",staples:"When entertainment budgets shrink, grocery spending stays steady — defensive wins"}},
-  {headline:"AMAZON WAREHOUSE WORKERS GO ON NATIONWIDE STRIKE",sub:"Holiday shopping disrupted; local retailers celebrate",year:"2023",paper:"NEW YORK TIMES",phases:["minor_recession"],
+  {headline:"AMAZON WAREHOUSE WORKERS GO ON NATIONWIDE STRIKE",mood:"bear",sub:"Holiday shopping disrupted; local retailers celebrate",year:"2023",paper:"NEW YORK TIMES",phases:["minor_recession"],
     effects:{disc:-0.03,staples:0.03,ind:0.03},
     reasons:{disc:"The biggest online retailer can\'t ship packages — holiday sales take a hit",staples:"Shoppers return to physical stores for essentials — Walmart and Target win",ind:"Competing delivery and logistics companies pick up Amazon\'s overflow — FedEx and UPS surge"}},
-  {headline:"SELF-DRIVING TAXIS APPROVED IN ALL 50 STATES",sub:"Auto revolution begins; oil demand questioned",year:"2025",paper:"DEPARTMENT OF TRANSPORTATION",phases:["expansion"],
+  {headline:"SELF-DRIVING TAXIS APPROVED IN ALL 50 STATES",mood:"bull",sub:"Auto revolution begins; oil demand questioned",year:"2025",paper:"DEPARTMENT OF TRANSPORTATION",phases:["expansion"],
     effects:{tech:0.05,energy:-0.04,ind:-0.03},
     reasons:{tech:"AI and sensor companies see massive demand for autonomous vehicle technology",energy:"Efficient robot taxis could cut fuel consumption by 30% — oil\'s future darkens",ind:"Traditional automakers and truck drivers face an existential threat"}},
-  {headline:"CATEGORY 5 HURRICANE DEVASTATES GULF COAST",sub:"Rebuilding begins; energy infrastructure damaged",year:"2023",paper:"WEATHER CHANNEL",phases:["minor_recession","major_recession"],
+  {headline:"CATEGORY 5 HURRICANE DEVASTATES GULF COAST",mood:"bear",sub:"Rebuilding begins; energy infrastructure damaged",year:"2023",paper:"WEATHER CHANNEL",phases:["minor_recession","major_recession"],
     effects:{ind:0.05,mat:0.04,energy:-0.04},
     reasons:{ind:"Construction and rebuilding contracts pour in — heavy equipment demand surges",mat:"Lumber, steel, and building materials prices spike on rebuilding demand",energy:"Damaged refineries and pipelines cut oil production for months"}},
-  {headline:"CHINA BANS ALL CRYPTOCURRENCY — BITCOIN CRASHES 40%",sub:"Crypto panic spreads; traditional banks look smart",year:"2021",paper:"SOUTH CHINA MORNING POST",phases:["peak","minor_recession"],
+  {headline:"CHINA BANS ALL CRYPTOCURRENCY — BITCOIN CRASHES 40%",mood:"bear",sub:"Crypto panic spreads; traditional banks look smart",year:"2021",paper:"SOUTH CHINA MORNING POST",phases:["peak","minor_recession"],
     effects:{tech:-0.04,fin:0.03,staples:0.02},
     reasons:{tech:"Crypto exchanges and blockchain companies lose their biggest market overnight",fin:"Traditional banks and brokerages look stable and trustworthy by comparison",staples:"Risk-off sentiment drives investors toward the safest, most boring sectors"}},
-  {headline:"TRADE WAR ESCALATES — 50% TARIFFS ON IMPORTS",sub:"American factories cheer; consumers pay more",year:"2019",paper:"BLOOMBERG",phases:["peak"],
+  {headline:"TRADE WAR ESCALATES — 50% TARIFFS ON IMPORTS",mood:"bear",sub:"American factories cheer; consumers pay more",year:"2019",paper:"BLOOMBERG",phases:["peak"],
     effects:{ind:0.04,disc:-0.04,mat:-0.03},
     reasons:{ind:"Domestic manufacturers gain a competitive edge as foreign goods get expensive",disc:"Retailers face higher costs on imported goods — prices rise, sales fall",mat:"Raw material supply chains are disrupted by retaliatory tariffs both ways"}},
-  {headline:"STUDENT LOAN PAYMENTS RESTART — 40 MILLION AFFECTED",sub:"Wallets tighten; lenders benefit",year:"2023",paper:"DEPARTMENT OF EDUCATION",phases:["minor_recession"],
+  {headline:"STUDENT LOAN PAYMENTS RESTART — 40 MILLION AFFECTED",mood:"bear",sub:"Wallets tighten; lenders benefit",year:"2023",paper:"DEPARTMENT OF EDUCATION",phases:["minor_recession"],
     effects:{disc:-0.03,fin:0.03,staples:0.02},
     reasons:{disc:"Young consumers redirect hundreds per month from shopping to loan payments",fin:"Banks and loan servicers collect billions in resumed payments",staples:"Even with tighter budgets, people still buy groceries and toothpaste"}},
-  {headline:"GLOBAL SHIPPING CRISIS — CONTAINER SHIP BLOCKS CANAL",sub:"Supply chains choked; commodity prices surge",year:"2021",paper:"ASSOCIATED PRESS",phases:["peak","minor_recession"],
+  {headline:"GLOBAL SHIPPING CRISIS — CONTAINER SHIP BLOCKS CANAL",mood:"bear",sub:"Supply chains choked; commodity prices surge",year:"2021",paper:"ASSOCIATED PRESS",phases:["peak","minor_recession"],
     effects:{mat:0.03,ind:-0.04,energy:0.03},
     reasons:{mat:"Scarcity of raw materials drives commodity prices through the roof",ind:"Factories idle as parts and materials sit on ships that can\'t move",energy:"Shipping delays spike fuel demand as vessels reroute around Africa"}},
-  {headline:"MINIMUM WAGE JUMPS TO $20 — FAST FOOD PRICES SOAR",sub:"Workers celebrate; restaurants scramble",year:"2024",paper:"DEPARTMENT OF LABOR",phases:["early_recovery","minor_expansion"],
+  {headline:"MINIMUM WAGE JUMPS TO $20 — FAST FOOD PRICES SOAR",mood:"bear",sub:"Workers celebrate; restaurants scramble",year:"2024",paper:"DEPARTMENT OF LABOR",phases:["early_recovery","minor_expansion"],
     effects:{disc:-0.04,staples:-0.03,health:0.03},
     reasons:{disc:"Restaurant and retail chains see labor costs spike — profits squeezed hard",staples:"Grocery companies face the same wage pressure — food prices climb",health:"Healthcare is less affected by minimum wage — and higher wages mean more people can afford insurance"}},
-  {headline:"WORST DROUGHT IN 50 YEARS DESTROYS CROPS",sub:"Food prices spike; commodities surge",year:"2023",paper:"USDA",phases:["major_recession","trough"],
+  {headline:"WORST DROUGHT IN 50 YEARS DESTROYS CROPS",mood:"bear",sub:"Food prices spike; commodities surge",year:"2023",paper:"USDA",phases:["major_recession","trough"],
     effects:{staples:0.03,mat:0.02,disc:-0.04},
     reasons:{staples:"Food companies raise prices — their revenue grows even as crop supply shrinks",mat:"Agricultural commodities and fertilizer prices surge on scarcity",disc:"Consumers spend so much more on food that discretionary spending collapses"}},
-  {headline:"SPACEX LAUNCHES FIRST TOURIST TRIP TO MARS",sub:"Space economy ignites; down-to-earth stocks yawn",year:"2026",paper:"SPACENEWS",phases:["expansion"],
+  {headline:"SPACEX LAUNCHES FIRST TOURIST TRIP TO MARS",mood:"bull",sub:"Space economy ignites; down-to-earth stocks yawn",year:"2026",paper:"SPACENEWS",phases:["expansion"],
     effects:{ind:0.04,tech:0.03,util:-0.02},
     reasons:{ind:"Aerospace and defense contractors ride the wave of space industry investment",tech:"Satellite, communications, and space software companies see new demand",util:"Boring earth-bound utilities lose investor attention to exciting space stocks"}},
-  {headline:"MASSIVE DATA BREACH EXPOSES 500 MILLION ACCOUNTS",sub:"Cybersecurity booms; consumer trust collapses",year:"2023",paper:"WIRED",phases:["minor_recession"],
+  {headline:"MASSIVE DATA BREACH EXPOSES 500 MILLION ACCOUNTS",mood:"bear",sub:"Cybersecurity booms; consumer trust collapses",year:"2023",paper:"WIRED",phases:["minor_recession"],
     effects:{tech:-0.03,tele:-0.04,fin:0.03},
     reasons:{tech:"The breached company\'s stock tanks, dragging down tech sentiment broadly",tele:"Telecom companies holding customer data face intense regulatory scrutiny",fin:"Banks\' existing security infrastructure looks strong — investors rotate in"}},
-  {headline:"BREAKTHROUGH CANCER DRUG CURES 90% IN TRIALS",sub:"Biotech soars; medical costs questioned",year:"2025",paper:"NEW ENGLAND JOURNAL OF MEDICINE",phases:["expansion","early_recovery"],
+  {headline:"BREAKTHROUGH CANCER DRUG CURES 90% IN TRIALS",mood:"bull",sub:"Biotech soars; medical costs questioned",year:"2025",paper:"NEW ENGLAND JOURNAL OF MEDICINE",phases:["expansion","early_recovery"],
     effects:{health:0.06,tech:0.02,util:-0.03},
     reasons:{health:"Pharmaceutical and biotech stocks explode on the most promising drug trial in decades",tech:"AI-powered drug discovery gets credit — biotech-tech crossover stocks surge",util:"Investors abandon safe defensive utilities to chase exciting healthcare gains"}},
-  {headline:"GOLD HITS ALL-TIME HIGH AS DOLLAR WEAKENS",sub:"Safe havens shine; growth stocks fade",year:"2024",paper:"KITCO NEWS",phases:["trough","major_recession"],
+  {headline:"GOLD HITS ALL-TIME HIGH AS DOLLAR WEAKENS",mood:"bear",sub:"Safe havens shine; growth stocks fade",year:"2024",paper:"KITCO NEWS",phases:["trough","major_recession"],
     effects:{mat:0.04,fin:-0.03,tech:-0.03},
     reasons:{mat:"Gold miners and precious metals companies see record profits",fin:"A weak dollar hurts international banking operations and trading desks",tech:"Rising gold prices signal fear — investors dump risky growth stocks"}},
-  {headline:"STREAMING WARS — DISNEY+ PASSES NETFLIX IN SUBSCRIBERS",sub:"Entertainment reshuffled; traditional media fades",year:"2024",paper:"DEADLINE",phases:["minor_expansion"],
+  {headline:"STREAMING WARS — DISNEY+ PASSES NETFLIX IN SUBSCRIBERS",mood:"bull",sub:"Entertainment reshuffled; traditional media fades",year:"2024",paper:"DEADLINE",phases:["minor_expansion"],
     effects:{disc:0.04,tech:0.03,tele:-0.03},
     reasons:{disc:"Content spending and subscriber wars boost the entire entertainment sector",tech:"Streaming infrastructure, cloud computing, and content delivery companies benefit",tele:"Traditional cable TV and telecom bundles lose subscribers faster than ever"}},
-  {headline:"5G ROLLOUT COMPLETE — RURAL AMERICA FINALLY CONNECTED",sub:"Telecom profits soar; tech expands reach",year:"2025",paper:"FCC REPORT",phases:["early_recovery","minor_expansion"],
+  {headline:"5G ROLLOUT COMPLETE — RURAL AMERICA FINALLY CONNECTED",mood:"bull",sub:"Telecom profits soar; tech expands reach",year:"2025",paper:"FCC REPORT",phases:["early_recovery","minor_expansion"],
     effects:{tele:0.06,tech:0.03,util:-0.02},
     reasons:{tele:"Telecom carriers reap the reward of years of 5G infrastructure investment",tech:"Faster networks mean more app downloads, streaming, and cloud computing",util:"Telecom companies now compete with utilities for the \'boring but reliable\' investor dollar"}},
-  {headline:"FAST FOOD CHAINS REPLACE CASHIERS WITH AI KIOSKS",sub:"Automation accelerates; workers displaced",year:"2025",paper:"BUSINESS INSIDER",phases:["expansion","peak"],
+  {headline:"FAST FOOD CHAINS REPLACE CASHIERS WITH AI KIOSKS",mood:"bull",sub:"Automation accelerates; workers displaced",year:"2025",paper:"BUSINESS INSIDER",phases:["expansion","peak"],
     effects:{tech:0.04,disc:0.03,ind:-0.04},
     reasons:{tech:"AI and robotics companies win massive contracts from restaurant chains",disc:"Lower labor costs boost restaurant profit margins significantly",ind:"Manufacturing and service workers fear the same automation wave is coming for them"}},
-  {headline:"RECORD WILDFIRE SEASON — CALIFORNIA DECLARES EMERGENCY",sub:"Power grid strained; rebuilding starts",year:"2023",paper:"LOS ANGELES TIMES",phases:["trough"],
+  {headline:"RECORD WILDFIRE SEASON — CALIFORNIA DECLARES EMERGENCY",mood:"bear",sub:"Power grid strained; rebuilding starts",year:"2023",paper:"LOS ANGELES TIMES",phases:["trough"],
     effects:{util:-0.04,mat:0.02,health:0.03},
     reasons:{util:"Utility companies face billions in liability for fires sparked by power lines",mat:"Building materials demand surges as thousands of homes need rebuilding",health:"Smoke-related illness and healthcare demand spike across the West Coast"}},
-  {headline:"OPEC SLASHES OIL PRODUCTION BY 2 MILLION BARRELS",sub:"Gas prices jump; consumers feel the squeeze",year:"2022",paper:"OPEC PRESS RELEASE",phases:["early_recovery"],
+  {headline:"OPEC SLASHES OIL PRODUCTION BY 2 MILLION BARRELS",mood:"bear",sub:"Gas prices jump; consumers feel the squeeze",year:"2022",paper:"OPEC PRESS RELEASE",phases:["early_recovery"],
     effects:{energy:0.06,tele:-0.03,staples:-0.03},
     reasons:{energy:"Less supply means higher oil prices — energy companies earn fatter profits",tele:"Cell tower and data center operations face rising energy bills",staples:"Higher fuel and transportation costs squeeze grocery store profit margins"}},
-  {headline:"CONGRESS BANS SOCIAL MEDIA FOR KIDS UNDER 16",sub:"Tech stocks tumble; traditional entertainment wins",year:"2025",paper:"POLITICO",phases:["minor_expansion","peak"],
+  {headline:"CONGRESS BANS SOCIAL MEDIA FOR KIDS UNDER 16",mood:"bear",sub:"Tech stocks tumble; traditional entertainment wins",year:"2025",paper:"POLITICO",phases:["minor_expansion","peak"],
     effects:{tech:-0.05,tele:0.03,staples:0.02},
     reasons:{tech:"Social media companies lose their most engaged demographic — ad revenue threatened",tele:"Parents switch kids to basic phone plans — telecom subscriber numbers jump",staples:"With less screen time, families spend more on physical activities and household goods"}},
-  {headline:"BRUTAL HEAT WAVE CRASHES ELECTRIC GRID",sub:"Rolling blackouts; energy demand spikes",year:"2023",paper:"NATIONAL WEATHER SERVICE",phases:["trough","minor_recession"],
+  {headline:"BRUTAL HEAT WAVE CRASHES ELECTRIC GRID",mood:"bear",sub:"Rolling blackouts; energy demand spikes",year:"2023",paper:"NATIONAL WEATHER SERVICE",phases:["trough","minor_recession"],
     effects:{util:0.05,energy:0.04,tech:-0.03},
     reasons:{util:"Electricity demand hits records — utilities charge peak pricing and expand capacity",energy:"Natural gas and backup power generation companies run at full blast",tech:"Data centers forced offline by blackouts — cloud computing disrupted"}},
-  {headline:"TAYLOR SWIFT CONCERT CRASHES TICKETMASTER — CONGRESS INVESTIGATES",sub:"Antitrust fears hit entertainment; competition emerges",year:"2022",paper:"ROLLING STONE",phases:["expansion","minor_expansion"],
+  {headline:"TAYLOR SWIFT CONCERT CRASHES TICKETMASTER — CONGRESS INVESTIGATES",mood:"bear",sub:"Antitrust fears hit entertainment; competition emerges",year:"2022",paper:"ROLLING STONE",phases:["expansion","minor_expansion"],
     effects:{disc:0.04,tech:-0.03,fin:0.02},
     reasons:{disc:"Live entertainment demand proves insatiable — concert and event stocks soar",tech:"Ticketmaster\'s parent company faces antitrust breakup — tech monopolies under fire",fin:"Payment processors and competing ticket platforms see new business opportunities"}}
 ];
@@ -568,7 +568,7 @@ function renderSetup(){
               </div>
               <div style="display:flex;gap:14px;font-size:11px">
                 <div style="text-align:center"><div style="color:var(--muted)">Beta</div><div style="font-family:var(--font-m);font-weight:700;color:${risk.color}">${risk.beta.toFixed(2)}</div></div>
-                <div style="text-align:center"><div style="color:var(--muted)">Off/Def</div><div style="font-family:var(--font-m);font-weight:700">${risk.offPct}/${risk.defPct}</div></div>
+                <div style="text-align:center"><div style="color:var(--muted)">Off/Def</div><div style="font-family:var(--font-m);font-weight:700"><span style="color:#c0392b">${risk.offPct}</span>/<span style="color:#1d4ed8">${risk.defPct}</span></div></div>
                 ${hasCash?`<div style="text-align:center"><div style="color:var(--muted)">Cash</div><div style="font-family:var(--font-m);font-weight:700;color:#059669">${risk.cashPct}%</div></div>`:''}
               </div>
             </div>
@@ -588,7 +588,7 @@ function renderPlay(){
   return `<div class="container" style="animation:fadeIn .3s ease">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
     <div><h2 style="font-size:26px;margin:0">🐂 Market Cycle Game</h2><div style="font-size:14px;color:var(--muted)">Round ${Math.min(S.curRound+1,S.cycle.length)} of ${S.cycle.length}</div></div>
-    <div style="display:flex;gap:8px">${canRebal&&!S.rebalOpen?`<button id="rebalBtn" class="btn btn-sm btn-outline" onclick="enableRebalance()" title="Open rebalance window for players">⚖️ Rebalance</button>`:canRebal&&S.rebalOpen?`<button id="rebalLoadBtn" class="btn btn-sm btn-green" onclick="loadRebalanced()">🔄 Load Rebalanced</button>`:''}${gameOver?`<button class="btn btn-gold" onclick="showResults()">🏆 Final Results</button>`:`<button class="btn btn-primary" onclick="startRound()">▶ Next Round</button>`}</div>
+    <div style="display:flex;gap:8px">${canRebal&&!S.rebalOpen?`<button id="rebalBtn" class="btn btn-sm btn-outline" onclick="enableRebalance()" title="Open rebalance window for players">⚖️ Rebalance</button>`:canRebal&&S.rebalOpen?`<button id="rebalLoadBtn" class="btn btn-sm btn-green" onclick="loadRebalanced()">🔄 Load Rebalanced</button>`:''}<button class="btn btn-sm btn-outline" onclick="endGameEarly()" title="End game and show final results">🏁 End Game</button>${gameOver?`<button class="btn btn-gold" onclick="showResults()">🏆 Final Results</button>`:`<button class="btn btn-primary" onclick="startRound()">▶ Next Round</button>`}</div>
   </div>
   <div class="card" style="padding:16px 24px">${renderSCurve()}</div>
   <div class="tabs">
@@ -607,33 +607,39 @@ function renderSCurve(){
   const yMap=pid=>{const ph=PHASES.find(p=>p.id===pid);return ph.mood==='bull'?(ph.ret>.1?18:28):(ph.ret<-.1?68:56)};
   const ys=S.cycle.map(pid=>yMap(pid));
   const w=n*110+160;
-  const lastDone=cr-1;// index of last completed round (-1 if none)
+  const lastDone=cr-1;
 
   // Solid line through completed rounds
   const pastLine=cr>0?ys.slice(0,cr).map((y,i)=>`${i*110+55},${y}`).join(' '):'';
 
-  // Scenario projections launch from the last completed round dot
+  // Scenario projections — show from round 0 onward
   let scenarioSVG='';
-  if(cr>0&&cr<n){
-    const startY=ys[lastDone];const startX=lastDone*110+55;
+  if(cr<n){
+    const startX=cr===0?55:lastDone*110+55;
+    const startY=cr===0?40:ys[lastDone];// neutral midpoint if no rounds played
     const remaining=n-cr;const scLen=Math.min(remaining+1,4);
     const scenarios=[
-      {name:"Continued Growth",color:"#16a34a",yEnd:15,dash:"8 4"},
-      {name:"Soft Landing",color:"#eab308",yEnd:40,dash:"6 6"},
-      {name:"Recession",color:"#dc2626",yEnd:70,dash:"4 4"}
+      {name:"Continued Growth",color:"#16a34a",yEnd:Math.max(5,startY-30),dash:"8 4"},
+      {name:"Soft Landing",color:"#eab308",yEnd:startY,dash:"6 6"},
+      {name:"Recession",color:"#dc2626",yEnd:Math.min(80,startY+30),dash:"4 4"}
     ];
     scenarios.forEach(sc=>{
       const pts=[];for(let i=0;i<=scLen;i++){const x=startX+(i*110);const y=startY+(sc.yEnd-startY)*(i/scLen);pts.push(`${x},${y}`);}
       scenarioSVG+=`<polyline points="${pts.join(' ')}" fill="none" stroke="${sc.color}" stroke-width="2.5" stroke-dasharray="${sc.dash}" opacity="0.5"/>`;
-      const endX=startX+scLen*110,endY=startY+(sc.yEnd-startY);
+      const endX=startX+scLen*110,endY=sc.yEnd;
       scenarioSVG+=`<text x="${endX+8}" y="${endY+4}" font-size="11" font-family="var(--font-b)" fill="${sc.color}" font-weight="700" opacity="0.7">${sc.name}</text>`;
     });
   }
+
+  // Current position dot (before any rounds played)
+  const curDotSVG=cr===0?`<circle cx="55" cy="40" r="10" fill="var(--accent)" stroke="white" stroke-width="3" opacity="1"/>
+    <text x="55" y="86" text-anchor="middle" font-size="10" font-family="var(--font-m)" fill="var(--accent)" font-weight="700">📍 NOW</text>`:'';
 
   return `<div style="overflow-x:auto"><svg width="100%" height="90" viewBox="0 0 ${w} 90" preserveAspectRatio="xMinYMid meet">
     ${S.cycle.map((pid,i)=>{const ph=PHASES.find(p=>p.id===pid);return `<rect x="${i*110}" y="0" width="110" height="90" fill="${ph.color}" opacity="${i<cr?0.08:i===cr?0.12:0.03}" rx="4"/>`}).join('')}
     ${pastLine?`<polyline points="${pastLine}" fill="none" stroke="var(--text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.3"/>`:''}
     ${scenarioSVG}
+    ${curDotSVG}
     ${S.cycle.map((pid,i)=>{const ph=PHASES.find(p=>p.id===pid);const isPast=i<cr&&i<lastDone;const isLastDone=i===lastDone&&cr>0;const isFuture=i>=cr;
       if(isLastDone) return `<circle cx="${i*110+55}" cy="${ys[i]}" r="10" fill="${ph.color}" stroke="white" stroke-width="3" opacity="1"/>
         <text x="${i*110+55}" y="86" text-anchor="middle" font-size="10" font-family="var(--font-m)" fill="${ph.color}" font-weight="700">${ph.icon} R${i+1}</text>`;
@@ -695,7 +701,7 @@ function renderPlayers(){
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <div>
           <div style="font-family:var(--font-d);font-size:22px;font-weight:900">${p.name}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">#${rank+1} · β ${wb.toFixed(2)} · ${offPct}% offensive</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">#${rank+1} · β ${wb.toFixed(2)} · <span style="color:${offPct>0?'#c0392b':'#1d4ed8'}">${offPct}% offensive</span></div>
         </div>
         <div style="text-align:right">
           <div style="font-family:var(--font-m);font-size:24px;font-weight:800;color:${beatsIdx?'var(--green)':'var(--red)'}">$${p.val.toFixed(0)}</div>
@@ -783,7 +789,7 @@ function renderHistory(){
 
 // ===================== ROUND =====================
 function renderRound(){
-  const phase=PHASES.find(c=>c.id===S.cycle[S.curRound]),isBear=phase.mood==='bear',sc=S.scene;let content='';
+  const phase=PHASES.find(c=>c.id===S.cycle[S.curRound]),isBear=S.curNews&&S.curNews.mood==='bear',sc=S.scene;let content='';
 
   if(S.newsStep===0){// Battle
     content=`<div style="text-align:center;animation:fadeIn .5s ease">
@@ -791,27 +797,27 @@ function renderRound(){
       <div style="font-size:56px;margin:12px 0">${phase.icon}</div>
       <h1 style="font-size:40px;font-weight:900;color:${phase.color};margin:0;text-shadow:0 0 30px ${phase.color}40;font-family:var(--font-d)">${phase.name}</h1>
       <div style="background:rgba(255,255,255,.06);border-radius:18px;padding:32px;margin:28px 0;border:1px solid rgba(255,255,255,.1)">
-        <div style="font-size:13px;letter-spacing:3px;color:#a8a29e;margin-bottom:16px">${sc.title}</div>
-        ${!S.battleDone?`<div id="battleShuffle" style="font-size:72px;margin-bottom:10px;transition:transform .05s">${sc.bull} vs ${sc.bear}</div>
-        <button id="battleBtn" class="btn btn-gold" style="margin-top:16px;font-size:17px;padding:16px 44px" onclick="revealBattle()">⚡ Reveal the Winner!</button>`
+        <h2 style="font-family:var(--font-d);font-size:36px;font-weight:900;color:#e8e5e0;margin-bottom:20px;letter-spacing:2px">Newsroom Showdown</h2>
+        ${!S.battleDone?`<div id="battleShuffle" style="font-size:72px;margin-bottom:10px;transition:transform .05s">🐂 vs 🐻</div>
+        <button id="battleBtn" class="btn btn-gold" style="margin-top:16px;font-size:17px;padding:16px 44px" onclick="revealBattle()">⚡ What's the news?</button>`
         :`<div style="display:flex;align-items:center;justify-content:center;gap:60px;margin-top:8px;animation:fadeIn .3s ease">
-          <div style="position:relative;font-size:72px;">
-            ${sc.bull}
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:24px;padding:6px 18px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${isBear?'#ef4444':'#4ade80'};color:${isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.6)">${isBear?'LOSER':'WINNER'}</div>
+          <div style="position:relative;font-size:80px;">
+            🐂
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:20px;padding:6px 14px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${isBear?'#ef4444':'#4ade80'};color:${isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.7)">${isBear?'BAD NEWS':'GOOD NEWS'}</div>
           </div>
           <div style="font-size:28px;color:#a8a29e;font-weight:900">vs</div>
-          <div style="position:relative;font-size:72px;">
-            ${sc.bear}
-            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:24px;padding:6px 18px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${!isBear?'#ef4444':'#4ade80'};color:${!isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.6)">${!isBear?'LOSER':'WINNER'}</div>
+          <div style="position:relative;font-size:80px;">
+            🐻
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-family:var(--font-m);font-weight:700;font-size:20px;padding:6px 14px;border:4px solid;border-radius:6px;white-space:nowrap;animation:stampIn .4s ease .2s both;border-color:${!isBear?'#ef4444':'#4ade80'};color:${!isBear?'#ef4444':'#4ade80'};background:rgba(0,0,0,0.7)">${!isBear?'BAD NEWS':'GOOD NEWS'}</div>
           </div>
         </div>
-        <div style="font-size:22px;font-weight:700;margin-top:20px;color:${isBear?'#ef4444':'#4ade80'};animation:slideUp .5s ease .4s both">${isBear?sc.bearWin:sc.bullWin}</div>`}
+        <div style="font-size:22px;font-weight:700;margin-top:20px;color:${isBear?'#ef4444':'#4ade80'};animation:slideUp .5s ease .4s both">${isBear?'📉 Bad news hits the market...':'📈 Good news for investors!'}</div>`}
       </div>
       ${S.battleDone?`<button class="btn btn-primary" style="margin-top:8px;font-size:16px" onclick="advanceNews()">📰 Breaking News →</button>`:''}
     </div>`;
   } else if(S.newsStep===1){// News
     const nw=S.curNews;
-    content=`<div style="animation:fadeIn .3s ease"><div class="newspaper"><div class="newspaper-mast">${nw.paper}</div><div class="newspaper-hl">${nw.headline}</div><div class="newspaper-sub">${nw.sub}</div><div style="text-align:right;margin-top:12px"><span style="font-family:var(--font-m);font-size:11px;color:#b8b3ae;letter-spacing:0.5px">Historical event: ${nw.year}</span></div><div class="newspaper-stamp" style="border-color:${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'var(--green)':'var(--red)'})()};color:${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'var(--green)':'var(--red)'})()}">${(()=>{const pos=Object.values(nw.effects).filter(v=>v>0).length;return pos>=2?'BULLISH':'BEARISH'})()}</div></div>
+    content=`<div style="animation:fadeIn .3s ease"><div class="newspaper"><div class="newspaper-mast">${nw.paper}</div><div class="newspaper-hl">${nw.headline}</div><div class="newspaper-sub">${nw.sub}</div><div style="text-align:right;margin-top:12px"><span style="font-family:var(--font-m);font-size:11px;color:#b8b3ae;letter-spacing:0.5px">Historical event: ${nw.year}</span></div><div class="newspaper-stamp" style="border-color:${nw.mood==='bull'?'var(--green)':'var(--red)'};color:${nw.mood==='bull'?'var(--green)':'var(--red)'}">${nw.mood==='bull'?'BULLISH':'BEARISH'}</div></div>
     <div style="text-align:center;margin-top:28px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="processRound()">📊 Calculate Returns</button></div></div>`;
   } else if(S.newsStep===2){// Returns
     const ret=S.roundRet,nw=S.curNews;
@@ -865,7 +871,7 @@ function renderResults(){
   const beaters=allEntries.filter(e=>!e.isIdx&&e.val>idxF);
   const rc=['#c5a55a','#94a3b8','#b45309','#475569','#475569','#475569','#475569','#475569','#475569','#475569'];
   let playerRank=0;
-  const totalFeeDrag=Math.round((1-Math.pow(1-MGMT_FEE,S.cycle.length))*1000)/10;
+  const totalFeeDrag=Math.round((1-Math.pow(1-MGMT_FEE,S.curRound))*1000)/10;
 
   function holdingBars(port,label){
     const h=Object.entries(port).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
@@ -876,7 +882,7 @@ function renderResults(){
     }).join('')}</div>`;
   }
 
-  return `<div class="container" style="animation:fadeIn .5s ease"><div style="text-align:center;margin-bottom:32px"><div style="font-size:56px;margin-bottom:8px">🏆</div><h1 style="font-size:38px;margin:0">Final Results</h1><div style="font-size:15px;color:var(--muted);margin-top:6px">${S.cycle.length} rounds · Game #${S.gameNum}</div></div>
+  return `<div class="container" style="animation:fadeIn .5s ease"><div style="text-align:center;margin-bottom:32px"><div style="font-size:56px;margin-bottom:8px">🏆</div><h1 style="font-size:38px;margin:0">Final Results</h1><div style="font-size:15px;color:var(--muted);margin-top:6px">${S.curRound} of ${S.cycle.length} rounds · Game #${S.gameNum}</div></div>
   <div class="card">
     ${allEntries.map((e,i)=>{
       if(e.isIdx) return `<div class="lb-row" style="background:#f5f4f0;border:2px dashed var(--border);animation:slideUp ${.2+i*.1}s ease both"><div class="lb-rank" style="background:var(--muted)">📊</div><div class="lb-name" style="color:var(--muted)">Market Index <span style="font-size:11px;font-weight:400">— equal weight, all 10 sectors, no fees</span></div><span class="lb-val" style="color:var(--muted)">$${e.val.toFixed(0)}</span></div>`;
@@ -899,21 +905,25 @@ function renderResults(){
       </div>`;
     }).join('')}
   </div>
-  <div class="card" style="background:#1a1a1a;color:#e8e5e0"><h3 style="font-size:20px;margin:0 0 16px;color:var(--accent)">📚 What Did We Learn?</h3><div style="font-size:16px;line-height:1.8">
-    ${beaters.length===0
-      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. The index beat everyone.</strong> A simple, low-cost index fund — owning a little of everything — outperformed every active portfolio. This happens more often than you'd think: over any 15-year period, roughly 90% of professional money managers lose to the index.</p>`
-      :beaters.length<=Math.ceil(S.players.length/3)
-      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. The index beat almost everyone.</strong> Only ${beaters.length} of ${S.players.length} players beat the index. In real life, most professional money managers — people who do this for a living — can't beat it either.</p>`
-      :beaters.length<=S.players.length/2
-      ?`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. Beating the index is possible — but hard to repeat.</strong> ${beaters.length} of ${S.players.length} players beat the index this game. But could they do it again? Research shows that managers who beat the index one year usually don't repeat it the next.</p>`
-      :`<p style="margin-bottom:12px"><strong style="color:var(--accent)">1. This time, picking winners worked — but don't count on it.</strong> ${beaters.length} of ${S.players.length} players beat the index! That feels great. But studies show that even when investors pick the right sectors, most fall behind over 10+ years. One good game doesn't make a strategy.</p>`
-    }
-    <p style="margin-bottom:12px"><strong style="color:var(--accent)">2. Nobody saw it coming.</strong> Think back to Round 1 — did anyone predict exactly what would happen? ${S.roundHist.length>0?'We saw '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bear').length+' bear rounds and '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bull').length+' bull rounds.':''} The economy surprised everyone, just like in real life.</p>
-    <p style="margin-bottom:12px"><strong style="color:var(--accent)">3. Offensive vs. Defensive is a real trade-off.</strong> High-beta sectors like Tech and Energy swing big both ways — great in expansions, painful in recessions. Low-beta sectors like Utilities and Healthcare are steadier. Neither is "better" — it depends on what happens next, and nobody knows that in advance.</p>
-    <p style="margin-bottom:12px"><strong style="color:var(--accent)">4. Dividends are your silent partner.</strong> Every round, dividend-paying sectors added a small bonus. Over ${S.cycle.length} rounds, those payments compound — especially during downturns when stock prices fall but dividends keep paying.</p>
-    <p style="margin-bottom:12px"><strong style="color:var(--accent)">5. Fees quietly eat your lunch.</strong> Every round, active portfolios paid a ${(MGMT_FEE*100).toFixed(1)}% management fee — about ${totalFeeDrag}% total over the game. The index paid nothing. In real life, the average mutual fund charges ~1% per year, which adds up to tens of thousands of dollars over a career.</p>
-    <p><strong style="color:var(--accent)">6. Time in the market beats timing the market.</strong> The best strategy for most people: buy a diversified, low-cost index fund, keep adding to it, and don't panic when markets drop. Boring? Yes. Effective? Extremely.</p>
-  </div></div>
+  ${(()=>{
+    const lessons=[];
+    if(beaters.length===0) lessons.push('<strong style="color:var(--accent)">1. The index beat everyone.</strong> A simple, low-cost index fund — owning a little of everything — outperformed every active portfolio. This happens more often than you\'d think: over any 15-year period, roughly 90% of professional money managers lose to the index.');
+    else if(beaters.length<=Math.ceil(S.players.length/3)) lessons.push('<strong style="color:var(--accent)">1. The index beat almost everyone.</strong> Only '+beaters.length+' of '+S.players.length+' players beat the index. In real life, most professional money managers — people who do this for a living — can\'t beat it either.');
+    else if(beaters.length<=S.players.length/2) lessons.push('<strong style="color:var(--accent)">1. Beating the index is possible — but hard to repeat.</strong> '+beaters.length+' of '+S.players.length+' players beat the index this game. But could they do it again? Research shows that managers who beat the index one year usually don\'t repeat it the next.');
+    else lessons.push('<strong style="color:var(--accent)">1. This time, picking winners worked — but don\'t count on it.</strong> '+beaters.length+' of '+S.players.length+' players beat the index! That feels great. But studies show that even when investors pick the right sectors, most fall behind over 10+ years. One good game doesn\'t make a strategy.');
+    lessons.push('<strong style="color:var(--accent)">2. Nobody saw it coming.</strong> Think back to Round 1 — did anyone predict exactly what would happen? '+(S.roundHist.length>0?'We saw '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bear').length+' bear rounds and '+S.roundHist.filter(r=>PHASES.find(p=>p.id===r.phase)?.mood==='bull').length+' bull rounds.':'')+' The economy surprised everyone, just like in real life.');
+    lessons.push('<strong style="color:var(--accent)">3. Offensive vs. Defensive is a real trade-off.</strong> High-beta sectors like Tech and Energy swing big both ways — great in expansions, painful in recessions. Low-beta sectors like Utilities and Healthcare are steadier. Neither is &quot;better&quot; — it depends on what happens next, and nobody knows that in advance.');
+    lessons.push('<strong style="color:var(--accent)">4. Dividends are your silent partner.</strong> Every round, dividend-paying sectors added a small bonus. Over '+S.curRound+' rounds, those payments compound — especially during downturns when stock prices fall but dividends keep paying.');
+    lessons.push('<strong style="color:var(--accent)">5. Fees quietly eat your lunch.</strong> Every round, active portfolios paid a '+(MGMT_FEE*100).toFixed(1)+'% management fee — about '+totalFeeDrag+'% total over the game. The index paid nothing. In real life, the average mutual fund charges ~1% per year, which adds up to tens of thousands of dollars over a career.');
+    lessons.push('<strong style="color:var(--accent)">6. Time in the market beats timing the market.</strong> The best strategy for most people: buy a diversified, low-cost index fund, keep adding to it, and don\'t panic when markets drop. Boring? Yes. Effective? Extremely.');
+    const li=S._lessonIdx||0;
+    return '<div class="card" style="background:#1a1a1a;color:#e8e5e0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><h3 style="font-size:20px;margin:0;color:var(--accent)">📚 What Did We Learn?</h3><div style="font-size:14px;color:#a8a29e">'+(li+1)+' of '+lessons.length+'</div></div>'+
+      '<div style="font-size:22px;line-height:1.7;min-height:120px;animation:fadeIn .4s ease" id="lessonText">'+lessons[li]+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:24px">'+
+        (li>0?'<button class="btn btn-outline" style="color:#a8a29e;border-color:#555" onclick="S._lessonIdx='+(li-1)+';render()">← Previous</button>':'<div></div>')+
+        (li<lessons.length-1?'<button class="btn btn-gold" style="font-size:16px;padding:14px 36px" onclick="S._lessonIdx='+(li+1)+';render()">Next Lesson →</button>':'<div style="font-size:14px;color:var(--accent);font-weight:700">✓ All lessons complete</div>')+
+      '</div></div>';
+  })()}
   <div style="display:flex;gap:12px;justify-content:center;margin-top:24px"><button class="btn btn-primary" style="font-size:17px;padding:16px 44px" onclick="resetGame()">🔄 Play Again (Same Players)</button><button class="btn btn-gold" style="font-size:17px;padding:16px 44px" onclick="newGame()">🆕 New Game</button><button class="btn btn-outline" onclick="setState({screen:'play'})">← Dashboard</button></div></div>`;
 }
 
@@ -1100,10 +1110,17 @@ function loadRebalanced(){
 function addCycRound(){S.cycle.push('expansion');render()}
 function rmCycRound(){if(S.cycle.length>3){S.cycle.pop();render()}}
 function startGame(){S.screen='play';S.playTab='dashboard';S.curRound=0;render()}
-function startRound(){if(S.curRound>=S.cycle.length)return;const mag=genMag(),phase=S.cycle[S.curRound],news=getNews(phase,S.usedNews);if(news)S.usedNews.add(news.idx);S.mag=mag;S.curNews=news;S.scene=BULL_SCENES[S.curRound%BULL_SCENES.length];S.newsStep=0;S.battleDone=false;S.roundRet=null;S.commentary=[];S.screen='round';render()}
+function startRound(){if(S.curRound>=S.cycle.length)return;const mag=genMag(),phase=S.cycle[S.curRound],news=getNews(phase,S.usedNews);if(news)S.usedNews.add(news.idx);S.mag=mag;S.curNews=news;
+  // Random scene, avoiding repeats until all used
+  if(!S._usedScenes||S._usedScenes.length>=BULL_SCENES.length)S._usedScenes=[];
+  const avail=BULL_SCENES.filter((_,i)=>!S._usedScenes.includes(i));
+  const si=Math.floor(Math.random()*avail.length);
+  const sceneIdx=BULL_SCENES.indexOf(avail[si]);
+  S._usedScenes.push(sceneIdx);S.scene=BULL_SCENES[sceneIdx];
+  S.newsStep=0;S.battleDone=false;S.roundRet=null;S.commentary=[];S.screen='round';render()}
 function revealBattle(){
   const btn=document.getElementById('battleBtn');if(btn)btn.disabled=true;
-  const emojis=['🐂','🐻','💥','⚡','🔥','💪','🎯','👊','🏆','💰'];
+  const emojis=['🐂','🐻','📰','📉','📈','💥','⚡','🔥','💰','📊'];
   const shuffleEl=document.getElementById('battleShuffle');
   if(!shuffleEl)return;
   let count=0;const totalTicks=32;
@@ -1118,14 +1135,18 @@ function revealBattle(){
 function finishBattle(){
   if(S._battleInterval){clearInterval(S._battleInterval);S._battleInterval=null;}
   if(S.battleDone)return;
-  const ph=PHASES.find(c=>c.id===S.cycle[S.curRound]);
-  if(ph.mood==='bear')playBearWin();else playBullWin();
+  // Battle outcome matches the headline mood, not the phase
+  const isBear=S.curNews&&S.curNews.mood==='bear';
+  if(isBear)playBearWin();else playBullWin();
   S.battleDone=true;render();
 }
 function advanceNews(){playReveal();S.newsStep=1;render()}
 function processRound(){const phase=S.cycle[S.curRound],ret=calcReturns(phase,S.curNews,S.mag);S.roundRet=ret;const eqP={};SECTORS.forEach(s=>eqP[s.id]=10);const idxR=portReturn(eqP,ret);
-  // Apply returns + management fee to players (index is fee-free)
-  S.players.forEach(p=>{const r=portReturn(p.portfolio,ret),last=p.history[p.history.length-1];const afterReturn=last*(1+r);const afterFee=afterReturn*(1-MGMT_FEE);p.history.push(afterFee)});
+  // Apply returns + management fee to players (index is fee-free, cash is fee-free)
+  S.players.forEach(p=>{const r=portReturn(p.portfolio,ret),last=p.history[p.history.length-1];const afterReturn=last*(1+r);
+    // Fee only applies to non-cash portion
+    const totalAlloc=Object.values(p.portfolio).reduce((s,v)=>s+v,0);const cashAmt=p.portfolio.cash||0;const eqPct=totalAlloc>0?(totalAlloc-cashAmt)/totalAlloc:1;
+    const fee=MGMT_FEE*eqPct;const afterFee=afterReturn*(1-fee);p.history.push(afterFee)});
   const lastI=S.idxHist[S.idxHist.length-1];S.idxHist.push(lastI*(1+idxR));
   S.commentary=genCommentary(S.players,ret,idxR,phase);
   S.roundHist.push({phase,news:S.curNews,mag:S.mag,returns:ret});
@@ -1134,7 +1155,21 @@ function processRound(){const phase=S.cycle[S.curRound],ret=calcReturns(phase,S.
   S._reasonsRevealed=0;S.newsStep=2;render()}
 function showComm(){S.newsStep=3;render()}
 function finishRound(){S.curRound++;S.screen='play';S.playTab='dashboard';render()}
-function showResults(){S.screen='results';render()}
+function showResults(){S._lessonIdx=0;S.screen='results';render()}
+function endGameEarly(){
+  if(S.curRound<1){alert('Play at least one round first.');return;}
+  try{
+    S._lessonIdx=0;S.screen='results';render();
+  }catch(e){alert('Error: '+e.message+'\n'+e.stack);}
+}
+function restartGame(){
+  if(!confirm('Restart the game from Round 1? Players and portfolios will be kept.'))return;
+  S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});
+  S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S._usedScenes=[];S.playTab='dashboard';
+  fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}).catch(()=>{});
+  fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'}).catch(()=>{});
+  render();
+}
 function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';
   // Clear stale game state from Firebase so player page doesn't show rebalance mode
   fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}).catch(()=>{});

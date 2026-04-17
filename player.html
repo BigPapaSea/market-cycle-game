@@ -140,6 +140,7 @@ let gameMode='loading'; // loading, build, waiting, rebalance
 let gameStateData=null,playerData=null,oldPortfolio={},cashAlloc=0,allocations={},existingNames=[];
 let submittedName=sessionStorage.getItem('mcg_name')||'';
 let pollTimer=null;
+let activeBudget=BUDGET; // Changes to actual portfolio value during rebalance
 SECTORS.forEach(s=>allocations[s.id]=0);
 function getSectorTotal(){return Object.values(allocations).reduce((a,b)=>a+b,0)}
 function getTotal(){return cashAlloc+getSectorTotal()}
@@ -164,8 +165,19 @@ function pollFirebase(){
       if(pd){
         playerData={...pd,indexValue:gs.indexValue,round:gs.round,totalRounds:gs.totalRounds};
         oldPortfolio={...pd.portfolio};
+        activeBudget=Math.round(pd.currentValue/50)*50;
         cashAlloc=oldPortfolio.cash||0;
         SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+        // Scale allocations to fit new budget
+        const oldTotal=cashAlloc+SECTORS.reduce((sm,sec)=>sm+(allocations[sec.id]||0),0);
+        if(oldTotal>0&&oldTotal!==activeBudget){
+          const scale=activeBudget/oldTotal;
+          cashAlloc=Math.round(cashAlloc*scale/50)*50;
+          SECTORS.forEach(s=>{allocations[s.id]=Math.round((allocations[s.id]||0)*scale/50)*50});
+          const curTotal=cashAlloc+SECTORS.reduce((sm,s)=>sm+(allocations[s.id]||0),0);
+          const diff=activeBudget-curTotal;
+          if(diff!==0){const biggest=SECTORS.reduce((best,s)=>(allocations[s.id]||0)>(allocations[best.id]||0)?s:best,SECTORS[0]);allocations[biggest.id]=(allocations[biggest.id]||0)+diff;}
+        }
         gameMode='rebalance';
         renderApp();
       } else {
@@ -191,8 +203,18 @@ function detectMode(){
         if(pd){
           playerData={...pd,indexValue:gs.indexValue,round:gs.round,totalRounds:gs.totalRounds};
           oldPortfolio={...pd.portfolio};
+          activeBudget=Math.round(pd.currentValue/50)*50;
           cashAlloc=oldPortfolio.cash||0;
           SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+          const oldTotal=cashAlloc+SECTORS.reduce((sm,sec)=>sm+(allocations[sec.id]||0),0);
+          if(oldTotal>0&&oldTotal!==activeBudget){
+            const scale=activeBudget/oldTotal;
+            cashAlloc=Math.round(cashAlloc*scale/50)*50;
+            SECTORS.forEach(s=>{allocations[s.id]=Math.round((allocations[s.id]||0)*scale/50)*50});
+            const curTotal=cashAlloc+SECTORS.reduce((sm,s)=>sm+(allocations[s.id]||0),0);
+            const diff=activeBudget-curTotal;
+            if(diff!==0){const biggest=SECTORS.reduce((best,s)=>(allocations[s.id]||0)>(allocations[best.id]||0)?s:best,SECTORS[0]);allocations[biggest.id]=(allocations[biggest.id]||0)+diff;}
+          }
           gameMode='rebalance';renderApp();return;
         }
       }
@@ -286,8 +308,20 @@ function selectPlayer(){
   const pd=players.find(p=>p.name===name);if(!pd){alert('Player not found.');return;}
   playerData={...pd,indexValue:gameStateData.indexValue,round:gameStateData.round,totalRounds:gameStateData.totalRounds};
   oldPortfolio={...pd.portfolio};
+  activeBudget=Math.round(pd.currentValue/50)*50; // Round to nearest $50
   cashAlloc=oldPortfolio.cash||0;
   SECTORS.forEach(s=>{allocations[s.id]=oldPortfolio[s.id]||0});
+  // Scale allocations to fit new budget
+  const oldTotal=cashAlloc+SECTORS.reduce((s,sec)=>s+(allocations[sec.id]||0),0);
+  if(oldTotal>0&&oldTotal!==activeBudget){
+    const scale=activeBudget/oldTotal;
+    cashAlloc=Math.round(cashAlloc*scale/50)*50;
+    SECTORS.forEach(s=>{allocations[s.id]=Math.round((allocations[s.id]||0)*scale/50)*50});
+    // Adjust for rounding: add/subtract remainder from largest holding
+    const curTotal=cashAlloc+SECTORS.reduce((sum,s)=>sum+(allocations[s.id]||0),0);
+    const diff=activeBudget-curTotal;
+    if(diff!==0){const biggest=SECTORS.reduce((best,s)=>(allocations[s.id]||0)>(allocations[best.id]||0)?s:best,SECTORS[0]);allocations[biggest.id]=(allocations[biggest.id]||0)+diff;}
+  }
   submittedName=name;sessionStorage.setItem('mcg_name',name);
   renderApp();
 }
@@ -312,13 +346,13 @@ function renderRebalanceMode(){
 
 // ========== SHARED COMPONENTS ==========
 function renderBudgetBar(){
-  return '<div class="budget-bar" id="budgetBar"><div class="budget-left"><span class="budget-num" id="budgetNum">$0</span><span class="budget-of">/ $1,000</span></div><div class="budget-visual"><div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div></div><div class="budget-msg" id="budgetMsg" style="color:#b45309">$1,000 remaining</div></div>';
+  return '<div class="budget-bar" id="budgetBar"><div class="budget-left"><span class="budget-num" id="budgetNum">$0</span><span class="budget-of">/ $'+activeBudget+'</span></div><div class="budget-visual"><div class="budget-track"><div class="budget-fill" id="budgetFill" style="width:0%"></div></div></div><div class="budget-msg" id="budgetMsg" style="color:#b45309">$'+activeBudget+' remaining</div></div>';
 }
 
 function renderCashSection(){
   const prevNote=gameMode==='rebalance'?(oldPortfolio.cash>0?' Previously: $'+oldPortfolio.cash:' You had no cash before.'):'';
   const vaultSize=gameMode==='rebalance'?100:120;
-  return '<div class="cash-section"><div style="display:flex;align-items:center;gap:24px;position:relative;z-index:1"><div style="flex-shrink:0"><svg viewBox="0 0 140 140" width="'+vaultSize+'" height="'+vaultSize+'"><rect x="5" y="5" width="130" height="130" rx="12" fill="#2a2a2a" stroke="#555" stroke-width="2"/><circle cx="70" cy="70" r="52" fill="#333" stroke="#c5a55a" stroke-width="3"/><circle cx="70" cy="22" r="4" fill="#888"/><circle cx="70" cy="118" r="4" fill="#888"/><circle cx="22" cy="70" r="4" fill="#888"/><circle cx="118" cy="70" r="4" fill="#888"/><circle cx="36" cy="36" r="3" fill="#777"/><circle cx="104" cy="36" r="3" fill="#777"/><circle cx="36" cy="104" r="3" fill="#777"/><circle cx="104" cy="104" r="3" fill="#777"/><circle cx="70" cy="70" r="28" fill="#444" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="44" x2="70" y2="48" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="92" x2="70" y2="96" stroke="#c5a55a" stroke-width="1.5"/><line x1="44" y1="70" x2="48" y2="70" stroke="#c5a55a" stroke-width="1.5"/><line x1="92" y1="70" x2="96" y2="70" stroke="#c5a55a" stroke-width="1.5"/><circle cx="70" cy="70" r="14" fill="#c5a55a"/><circle cx="70" cy="70" r="8" fill="#b8943f"/><circle cx="70" cy="70" r="3" fill="#1a1a1a"/><rect x="108" y="60" width="22" height="6" rx="3" fill="#c5a55a"/><rect x="125" y="50" width="6" height="26" rx="3" fill="#c5a55a"/><rect x="2" y="40" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="60" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="80" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="100" width="8" height="6" rx="2" fill="#888"/></svg></div><div style="flex:1"><div style="font-family:var(--font-d);font-size:'+(gameMode==='rebalance'?24:28)+'px;font-weight:900;color:#c5a55a;margin-bottom:4px">The Vault</div><div style="font-size:'+(gameMode==='rebalance'?13:14)+'px;color:#a8a29e;margin-bottom:'+(gameMode==='rebalance'?10:4)+'px">Cash earns ~0.4% per round — guaranteed, no risk, no surprises. Protected from market crashes.'+prevNote+'</div>'+(gameMode==='build'?'<div style="display:flex;gap:20px;font-size:12px;color:#888;margin-bottom:12px"><span>β Beta: <strong style="color:#c5a55a">0.0</strong></span><span>Return: <strong style="color:#c5a55a">~0.4%/round</strong></span><span>Risk: <strong style="color:#4ade80">None</strong></span></div>':'')+'<div style="display:flex;align-items:center;gap:14px"><span style="font-size:14px;font-weight:700;color:#a8a29e;white-space:nowrap">Lock away:</span><div class="alloc-slider-wrap" style="flex:1"><div class="alloc-track" style="background:#444"></div><div class="alloc-fill" id="cashFill" style="width:'+(cashAlloc/BUDGET*100)+'%;background:#c5a55a"></div><input type="range" class="alloc-input" id="cashSlider" min="0" max="1000" step="50" value="'+cashAlloc+'" oninput="handleCashSlider(this.value)" /><div class="alloc-thumb" id="cashThumb" style="left:'+(cashAlloc/BUDGET*100)+'%;background:#c5a55a"></div></div><span class="alloc-amount" id="cashAmt" style="color:'+(cashAlloc>0?'#c5a55a':'#555')+';font-size:32px">$'+cashAlloc+'</span></div><div style="font-size:12px;color:#888;margin-top:8px;text-align:center" id="cashNote">'+(cashAlloc>0?'🔐 $'+cashAlloc+' locked in The Vault. $'+(BUDGET-cashAlloc)+' left for your 3 sectors.':"Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.")+'</div></div></div></div>';
+  return '<div class="cash-section"><div style="display:flex;align-items:center;gap:24px;position:relative;z-index:1"><div style="flex-shrink:0"><svg viewBox="0 0 140 140" width="'+vaultSize+'" height="'+vaultSize+'"><rect x="5" y="5" width="130" height="130" rx="12" fill="#2a2a2a" stroke="#555" stroke-width="2"/><circle cx="70" cy="70" r="52" fill="#333" stroke="#c5a55a" stroke-width="3"/><circle cx="70" cy="22" r="4" fill="#888"/><circle cx="70" cy="118" r="4" fill="#888"/><circle cx="22" cy="70" r="4" fill="#888"/><circle cx="118" cy="70" r="4" fill="#888"/><circle cx="36" cy="36" r="3" fill="#777"/><circle cx="104" cy="36" r="3" fill="#777"/><circle cx="36" cy="104" r="3" fill="#777"/><circle cx="104" cy="104" r="3" fill="#777"/><circle cx="70" cy="70" r="28" fill="#444" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="44" x2="70" y2="48" stroke="#c5a55a" stroke-width="2"/><line x1="70" y1="92" x2="70" y2="96" stroke="#c5a55a" stroke-width="1.5"/><line x1="44" y1="70" x2="48" y2="70" stroke="#c5a55a" stroke-width="1.5"/><line x1="92" y1="70" x2="96" y2="70" stroke="#c5a55a" stroke-width="1.5"/><circle cx="70" cy="70" r="14" fill="#c5a55a"/><circle cx="70" cy="70" r="8" fill="#b8943f"/><circle cx="70" cy="70" r="3" fill="#1a1a1a"/><rect x="108" y="60" width="22" height="6" rx="3" fill="#c5a55a"/><rect x="125" y="50" width="6" height="26" rx="3" fill="#c5a55a"/><rect x="2" y="40" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="60" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="80" width="8" height="6" rx="2" fill="#888"/><rect x="2" y="100" width="8" height="6" rx="2" fill="#888"/></svg></div><div style="flex:1"><div style="font-family:var(--font-d);font-size:'+(gameMode==='rebalance'?24:28)+'px;font-weight:900;color:#c5a55a;margin-bottom:4px">The Vault</div><div style="font-size:'+(gameMode==='rebalance'?13:14)+'px;color:#a8a29e;margin-bottom:'+(gameMode==='rebalance'?10:4)+'px">Cash earns ~0.4% per round — guaranteed, no risk, no surprises. Protected from market crashes.'+prevNote+'</div>'+(gameMode==='build'?'<div style="display:flex;gap:20px;font-size:12px;color:#888;margin-bottom:12px"><span>β Beta: <strong style="color:#c5a55a">0.0</strong></span><span>Return: <strong style="color:#c5a55a">~0.4%/round</strong></span><span>Risk: <strong style="color:#4ade80">None</strong></span></div>':'')+'<div style="display:flex;align-items:center;gap:14px"><span style="font-size:14px;font-weight:700;color:#a8a29e;white-space:nowrap">Lock away:</span><div class="alloc-slider-wrap" style="flex:1"><div class="alloc-track" style="background:#444"></div><div class="alloc-fill" id="cashFill" style="width:'+(cashAlloc/activeBudget*100)+'%;background:#c5a55a"></div><input type="range" class="alloc-input" id="cashSlider" min="0" max="1000" step="50" value="'+cashAlloc+'" oninput="handleCashSlider(this.value)" /><div class="alloc-thumb" id="cashThumb" style="left:'+(cashAlloc/activeBudget*100)+'%;background:#c5a55a"></div></div><span class="alloc-amount" id="cashAmt" style="color:'+(cashAlloc>0?'#c5a55a':'#555')+';font-size:32px">$'+cashAlloc+'</span></div><div style="font-size:12px;color:#888;margin-top:8px;text-align:center" id="cashNote">'+(cashAlloc>0?'🔐 $'+cashAlloc+' locked in The Vault. $'+(BUDGET-cashAlloc)+' left for your 3 sectors.':"Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.")+'</div></div></div></div>';
 }
 
 function renderOffDefSummary(){
@@ -328,18 +362,18 @@ function renderOffDefSummary(){
 function renderRiskMeter(){
   const title=gameMode==='rebalance'?'Your New Risk Appetite':'Your Risk Appetite';
   const sub=gameMode==='rebalance'?'Compared to your original portfolio':'This updates as you build your portfolio';
-  return '<div class="risk-meter empty" id="riskMeter"><div class="risk-title">📊 '+title+'</div><div class="risk-subtitle">'+sub+'</div><div style="position:relative;margin-bottom:6px"><div class="risk-bar"><div class="risk-segment" style="background:linear-gradient(90deg,#1d4ed8,#3b82f6)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#eab308,#f59e0b)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#f97316,#ea580c)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#ea580c,#dc2626)"></div></div><div class="risk-pointer" id="riskPointer" style="left:50%"><div class="risk-pointer-arrow"></div><div class="risk-pointer-line"></div></div></div><div class="risk-bar-labels"><span style="color:#1d4ed8;text-align:center">Conservative</span><span style="color:#3b82f6;text-align:center">Moderately<br>Conservative</span><span style="color:#ca8a04;text-align:center">Moderate</span><span style="color:#ea580c;text-align:center">Moderately<br>Aggressive</span><span style="color:#dc2626;text-align:center">Aggressive</span></div><div class="risk-result"><div class="risk-result-label" id="riskLabel" style="color:var(--muted)">—</div><div class="risk-result-detail" id="riskDetail">Allocate your $1,000 to see your risk profile</div></div><div class="risk-stats"><div class="risk-stat"><div class="risk-stat-label">Weighted Beta</div><div class="risk-stat-val" id="riskBeta" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Cash %</div><div class="risk-stat-val" id="riskCash" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Offensive %</div><div class="risk-stat-val" id="riskOff" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Defensive %</div><div class="risk-stat-val" id="riskDef" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Avg Dividend</div><div class="risk-stat-val" id="riskDiv" style="color:var(--muted)">—</div></div></div></div>';
+  return '<div class="risk-meter empty" id="riskMeter"><div class="risk-title">📊 '+title+'</div><div class="risk-subtitle">'+sub+'</div><div style="position:relative;margin-bottom:6px"><div class="risk-bar"><div class="risk-segment" style="background:linear-gradient(90deg,#1d4ed8,#3b82f6)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#eab308,#f59e0b)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#f97316,#ea580c)"></div><div class="risk-segment" style="background:linear-gradient(90deg,#ea580c,#dc2626)"></div></div><div class="risk-pointer" id="riskPointer" style="left:50%"><div class="risk-pointer-arrow"></div><div class="risk-pointer-line"></div></div></div><div class="risk-bar-labels"><span style="color:#1d4ed8;text-align:center">Conservative</span><span style="color:#3b82f6;text-align:center">Moderately<br>Conservative</span><span style="color:#ca8a04;text-align:center">Moderate</span><span style="color:#ea580c;text-align:center">Moderately<br>Aggressive</span><span style="color:#dc2626;text-align:center">Aggressive</span></div><div class="risk-result"><div class="risk-result-label" id="riskLabel" style="color:var(--muted)">—</div><div class="risk-result-detail" id="riskDetail">Allocate your $"+activeBudget+" to see your risk profile</div></div><div class="risk-stats"><div class="risk-stat"><div class="risk-stat-label">Weighted Beta</div><div class="risk-stat-val" id="riskBeta" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Cash %</div><div class="risk-stat-val" id="riskCash" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Offensive %</div><div class="risk-stat-val" id="riskOff" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Defensive %</div><div class="risk-stat-val" id="riskDef" style="color:var(--muted)">—</div></div><div class="risk-stat"><div class="risk-stat-label">Avg Dividend</div><div class="risk-stat-val" id="riskDiv" style="color:var(--muted)">—</div></div></div></div>';
 }
 
 // ========== SHARED LOGIC ==========
 function handleCashSlider(v){
-  cashAlloc=Math.min(Math.max(0,Number(v)),BUDGET-getSectorTotal());
-  const pct=(cashAlloc/BUDGET)*100,el=id=>document.getElementById(id);
+  cashAlloc=Math.min(Math.max(0,Number(v)),activeBudget-getSectorTotal());
+  const pct=(cashAlloc/activeBudget)*100,el=id=>document.getElementById(id);
   if(el('cashAmt')){el('cashAmt').textContent='$'+cashAlloc;el('cashAmt').style.color=cashAlloc>0?'#c5a55a':'#555'}
   if(el('cashFill'))el('cashFill').style.width=pct+'%';
   if(el('cashThumb'))el('cashThumb').style.left=pct+'%';
   if(el('cashSlider'))el('cashSlider').value=cashAlloc;
-  const sb=BUDGET-cashAlloc;
+  const sb=activeBudget-cashAlloc;
   if(el('cashNote'))el('cashNote').textContent=cashAlloc>0?'🔐 $'+cashAlloc+' locked in The Vault. $'+sb+' left for your 3 sectors.':"Optional — the rest goes to your 3 sectors. Cash doesn't count as a sector pick.";
   renderSectors();updateBudgetDisplay();updateRiskMeter();
 }
@@ -353,16 +387,16 @@ function renderSectors(){
   const grid=document.getElementById('sectorsGrid');if(!grid)return;
   const sCount=getSectorCount();
   grid.innerHTML=SECTORS.map(s=>{
-    const pe=Math.round(s.basePE*1.15*(0.7+1.2*0.3)),pePct=Math.max(0,Math.min(100,((pe-s.peLow)/(s.peHigh-s.peLow))*100)),peColor=pePct>70?'#ef4444':pePct>40?'#eab308':'#16a34a',betaColor=s.beta>1.2?'#ef4444':s.beta>.9?'#eab308':'#16a34a',isOff=s.type==='offense';
+    const pe=s.basePE,pePct=Math.max(0,Math.min(100,((pe-s.peLow)/(s.peHigh-s.peLow))*100)),peColor=pePct>70?'#ef4444':pePct>40?'#eab308':'#16a34a',betaColor=s.beta>1.2?'#ef4444':s.beta>.9?'#eab308':'#16a34a',isOff=s.type==='offense';
     const val=allocations[s.id]||0,isLocked=val===0&&sCount>=MAX_SECTORS;
     let prevStrip='';
     if(gameMode==='rebalance'){const ov=oldPortfolio[s.id]||0;if(ov>0){const ch=val!==ov,ci=val>ov?'↑':val<ov?'↓':'',cc=val>ov?'#4ade80':val<ov?'#f87171':'#a8a29e';prevStrip='<div class="prev-strip"><span class="prev-strip-label">Previously</span><span class="prev-strip-val">$'+ov+'</span>'+(ch?'<span class="prev-strip-change" style="color:'+cc+'">'+ci+' $'+Math.abs(val-ov)+'</span>':'')+'</div>';}}
-    return '<div class="sector-card '+s.type+(val>0?' has-alloc':'')+'" id="card-'+s.id+'" style="'+(val>0?'border-color:'+s.color+'60;':'')+(isLocked?'opacity:0.4;':'')+'"><div class="sector-header"><span class="sector-icon">'+s.icon+'</span><span class="sector-name" style="color:'+s.color+'">'+s.name+'</span><span class="sector-badge '+s.type+'">'+(isOff?'🏈 Offensive':'🛡️ Defensive')+'</span></div><div class="sector-desc">'+s.desc+'</div><div class="sector-examples">'+s.examples+'</div><div class="metrics-row"><div class="metric"><div class="metric-label">β Beta</div><div class="metric-val" style="color:'+betaColor+'">'+s.beta+'</div></div><div class="metric"><div class="metric-label">🪙 Dividend</div><div class="metric-val" style="color:var(--green)">'+(s.div*100).toFixed(1)+'%</div></div></div><div class="pe-box"><div class="pe-title">📊 PE RATIO — HOW EXPENSIVE IS IT?</div><div class="speedo-wrap">'+buildSpeedoSVG(pe,s.peLow,s.peHigh,peColor)+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px;font-weight:600;margin-top:2px"><span style="color:#2d8a4e;text-align:left">Cheap ('+s.peLow+')</span><span style="color:#eab308;text-align:center">Fair Value</span><span style="color:#ef4444;text-align:right">Expensive ('+s.peHigh+')</span></div></div>'+prevStrip+'<div class="alloc-section"><div class="alloc-header"><span class="alloc-label">Your Investment</span><span class="alloc-amount" style="color:'+(val>0?s.color:'#d1cdc7')+'">$'+val+'</span></div><div class="alloc-slider-wrap"><div class="alloc-track"></div><div class="alloc-fill" style="width:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div><input type="range" class="alloc-input" min="0" max="'+(isLocked?0:1000)+'" step="50" value="'+val+'" oninput="handleSlider(\''+s.id+'\',this.value)" /><div class="alloc-thumb" style="left:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div></div></div></div>';
+    return '<div class="sector-card '+s.type+(val>0?' has-alloc':'')+'" id="card-'+s.id+'" style="'+(val>0?'border-color:'+s.color+'60;':'')+(isLocked?'opacity:0.4;':'')+'"><div class="sector-header"><span class="sector-icon">'+s.icon+'</span><span class="sector-name" style="color:'+s.color+'">'+s.name+'</span><span class="sector-badge '+s.type+'">'+(isOff?'🏈 Offensive':'🛡️ Defensive')+'</span></div><div class="sector-desc">'+s.desc+'</div><div class="sector-examples">'+s.examples+'</div><div class="metrics-row"><div class="metric"><div class="metric-label">β Beta</div><div class="metric-val" style="color:'+betaColor+'">'+s.beta+'</div></div><div class="metric"><div class="metric-label">🪙 Dividend</div><div class="metric-val" style="color:var(--green)">'+(s.div*100).toFixed(1)+'%</div></div></div><div class="pe-box"><div class="pe-title">📊 PE RATIO — HOW EXPENSIVE IS IT?</div><div class="speedo-wrap">'+buildSpeedoSVG(pe,s.peLow,s.peHigh,peColor)+'</div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px;font-weight:600;margin-top:2px"><span style="color:#2d8a4e;text-align:left">Cheap ('+s.peLow+')</span><span style="color:#eab308;text-align:center">Fair Value</span><span style="color:#ef4444;text-align:right">Expensive ('+s.peHigh+')</span></div></div>'+prevStrip+'<div class="alloc-section"><div class="alloc-header"><span class="alloc-label">Your Investment</span><span class="alloc-amount" style="color:'+(val>0?s.color:'#d1cdc7')+'">$'+val+'</span></div><div class="alloc-slider-wrap"><div class="alloc-track"></div><div class="alloc-fill" style="width:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div><input type="range" class="alloc-input" min="0" max="'+(isLocked?0:activeBudget)+'" step="50" value="'+val+'" oninput="handleSlider(\''+s.id+'\',this.value)" /><div class="alloc-thumb" style="left:'+((val/BUDGET)*100)+'%;background:'+s.color+'"></div></div></div></div>';
   }).join('');
 }
 
 function handleSlider(sid,v){
-  const newVal=Number(v),oT=Object.entries(allocations).reduce((s,[k,val])=>k===sid?s:s+val,0),mx=BUDGET-cashAlloc-oT,curVal=allocations[sid]||0,sC=getSectorCount();
+  const newVal=Number(v),oT=Object.entries(allocations).reduce((s,[k,val])=>k===sid?s:s+val,0),mx=activeBudget-cashAlloc-oT,curVal=allocations[sid]||0,sC=getSectorCount();
   if(curVal===0&&newVal>0&&sC>=MAX_SECTORS)return;
   allocations[sid]=Math.min(Math.max(0,newVal),mx);
   const card=document.getElementById('card-'+sid),sec=SECTORS.find(s=>s.id===sid),val=allocations[sid],pct=(val/BUDGET)*100;
@@ -376,25 +410,25 @@ function handleSlider(sid,v){
 }
 
 function updateBudgetDisplay(){
-  const total=getTotal(),rem=BUDGET-total,pct=(total/BUDGET)*100;
-  const color=total===BUDGET?'var(--green)':total>BUDGET?'var(--red)':'var(--text)';
-  const msgColor=total===BUDGET?'var(--green)':'#b45309',msg=total===BUDGET?'✓ Fully invested!':'$'+rem+' remaining';
+  const total=getTotal(),rem=activeBudget-total,pct=(total/activeBudget)*100;
+  const color=total===activeBudget?'var(--green)':total>activeBudget?'var(--red)':'var(--text)';
+  const msgColor=total===activeBudget?'var(--green)':'#b45309',msg=total===activeBudget?'✓ Fully invested!':'$'+rem+' remaining';
   const el=id=>document.getElementById(id);
   if(el('budgetNum')){el('budgetNum').textContent='$'+total;el('budgetNum').style.color=color}
-  if(el('budgetFill')){el('budgetFill').style.width=Math.min(pct,100)+'%';el('budgetFill').style.background=total===BUDGET?'var(--green)':total>BUDGET?'var(--red)':'var(--accent)'}
+  if(el('budgetFill')){el('budgetFill').style.width=Math.min(pct,100)+'%';el('budgetFill').style.background=total===activeBudget?'var(--green)':total>activeBudget?'var(--red)':'var(--accent)'}
   if(el('budgetMsg')){el('budgetMsg').textContent=msg;el('budgetMsg').style.color=msgColor}
   const sc=getSectorCount(),scMsg=el('sectorCountMsg');
   if(scMsg){scMsg.textContent=sc===MAX_SECTORS?'✓ '+sc+' of '+MAX_SECTORS+' sectors selected':sc+' of '+MAX_SECTORS+' selected';scMsg.style.color=sc===MAX_SECTORS?'var(--green)':'var(--muted)'}
   const btn=el('submitBtn');if(!btn)return;
   if(gameMode==='build'){
     const name=el('playerName')?el('playerName').value.trim():'';
-    const ready=name&&total===BUDGET;
+    const ready=name&&total===activeBudget;
     btn.disabled=!ready;btn.className='submit-btn '+(ready?'ready':'not-ready');
-    btn.textContent=ready?'✓ Lock in '+name+"'s Portfolio":total===BUDGET?'Enter your name above':'Invest $'+rem+' more';
+    btn.textContent=ready?'✓ Lock in '+name+"'s Portfolio":total===activeBudget?'Enter your name above':'Invest $'+rem+' more';
   } else {
-    const ready=playerData&&total===BUDGET;
+    const ready=playerData&&total===activeBudget;
     btn.disabled=!ready;btn.className='submit-btn '+(ready?'ready':'not-ready');
-    btn.textContent=ready?'✓ Lock in New Portfolio':total===BUDGET?'Ready!':'Invest $'+rem+' more';
+    btn.textContent=ready?'✓ Lock in New Portfolio':total===activeBudget?'Ready!':'Invest $'+rem+' more';
   }
 }
 
@@ -408,7 +442,7 @@ const RISK_LEVELS=[
 
 function updateRiskMeter(){
   const total=getTotal(),meter=document.getElementById('riskMeter');if(!meter)return;
-  if(total===0){meter.classList.add('empty');document.getElementById('riskLabel').textContent='—';document.getElementById('riskLabel').style.color='var(--muted)';document.getElementById('riskDetail').textContent='Allocate your $1,000 to see your risk profile';['riskBeta','riskCash','riskOff','riskDef','riskDiv'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).style.color='var(--muted)'});document.getElementById('riskPointer').style.left='50%';return}
+  if(total===0){meter.classList.add('empty');document.getElementById('riskLabel').textContent='—';document.getElementById('riskLabel').style.color='var(--muted)';document.getElementById('riskDetail').textContent='Allocate your $'+activeBudget+' to see your risk profile';['riskBeta','riskCash','riskOff','riskDef','riskDiv'].forEach(id=>{document.getElementById(id).textContent='—';document.getElementById(id).style.color='var(--muted)'});document.getElementById('riskPointer').style.left='50%';return}
   meter.classList.remove('empty');
   let wB=0,wD=0,offA=0,defA=0;wD+=0.004*cashAlloc;defA+=cashAlloc;
   Object.entries(allocations).forEach(([sid,amt])=>{if(amt<=0)return;const s=SECTORS.find(x=>x.id===sid);wB+=s.beta*amt;wD+=s.div*amt;if(s.type==='offense')offA+=amt;else defA+=amt});
@@ -421,8 +455,8 @@ function updateRiskMeter(){
   document.getElementById('riskDetail').textContent=lev.desc;
   document.getElementById('riskBeta').textContent=wB.toFixed(2);document.getElementById('riskBeta').style.color=lev.color;
   document.getElementById('riskCash').textContent=cashPct+'%';document.getElementById('riskCash').style.color=cashPct>0?'#059669':'var(--muted)';
-  document.getElementById('riskOff').textContent=offPct+'%';document.getElementById('riskOff').style.color=offPct>50?'#ea580c':'#1d4ed8';
-  document.getElementById('riskDef').textContent=defPct+'%';document.getElementById('riskDef').style.color=defPct>50?'#1d4ed8':'#ea580c';
+  document.getElementById('riskOff').textContent=offPct+'%';document.getElementById('riskOff').style.color='#c0392b';
+  document.getElementById('riskDef').textContent=defPct+'%';document.getElementById('riskDef').style.color='#1d4ed8';
   document.getElementById('riskDiv').textContent=(wD*100).toFixed(1)+'%';document.getElementById('riskDiv').style.color='var(--green)';
 }
 
@@ -466,7 +500,7 @@ function keepPortfolio(){
 }
 
 function submitRebalance(){
-  const total=getTotal();if(!playerData||total!==BUDGET)return;
+  const total=getTotal();if(!playerData||total!==activeBudget)return;
   const name=playerData.name,portfolio={};if(cashAlloc>0)portfolio.cash=cashAlloc;
   Object.entries(allocations).forEach(([sid,amt])=>{if(amt>0)portfolio[sid]=amt});
   const safeName=name.replace(/[.#$\/\[\]]/g,'_');
