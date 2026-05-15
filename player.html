@@ -1,4 +1,15 @@
 <!DOCTYPE html>
+<!--
+  player.html — v2 (2026-05-14)
+  CHANGE LOG vs v1:
+  - Added visibilitychange listener: immediately polls when tab returns to foreground
+    (fixes the main suspected cause of "rebalance didn't transition" on iOS/Android
+    where background tabs throttle setInterval).
+  - Reduced poll interval from 4s to 3s while waiting.
+  - Added live "last checked" indicator on waiting screen so kids can see it's alive.
+  - Added manual "Check Now" button on waiting screen as a backup.
+  - Polling errors are now logged to console (no longer silent) for easier diagnosis.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -147,14 +158,18 @@ function getTotal(){return cashAlloc+getSectorTotal()}
 function getSectorCount(){return Object.values(allocations).filter(v=>v>0).length}
 
 // ========== POLLING ==========
+let lastPollTime=0;
 function startPolling(){
   stopPolling();
-  pollTimer=setInterval(pollFirebase,4000);
+  pollFirebase();  // immediate first poll
+  pollTimer=setInterval(pollFirebase,3000);
 }
 function stopPolling(){
   if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
 }
 function pollFirebase(){
+  lastPollTime=Date.now();
+  updatePollIndicator();
   fetch(FIREBASE_URL+'/gameState.json').then(r=>r.json()).then(gs=>{
     if(gs&&gs.rebalanceOpen===true&&gs.players){
       stopPolling();
@@ -188,8 +203,41 @@ function pollFirebase(){
       }
     }
     // If rebalance not open, stay in waiting mode — keep polling
-  }).catch(()=>{});// Silent fail — keep polling
+  }).catch(e=>{console.warn('Poll failed (will retry in 3s):',e);});
 }
+
+function updatePollIndicator(){
+  const el=document.getElementById('pollStatus');
+  if(!el)return;
+  const startEl=document.getElementById('pollStart');
+  if(startEl)startEl.dataset.time=lastPollTime;
+  el.textContent='Last check: just now';
+  // Then count up
+  if(window._pollTick)clearInterval(window._pollTick);
+  window._pollTick=setInterval(()=>{
+    const e=document.getElementById('pollStatus');if(!e){clearInterval(window._pollTick);return;}
+    const secs=Math.floor((Date.now()-lastPollTime)/1000);
+    e.textContent='Last check: '+secs+'s ago';
+  },1000);
+}
+
+function manualPoll(){
+  const btn=document.getElementById('manualPollBtn');
+  if(btn){btn.textContent='⏳ Checking…';btn.disabled=true;}
+  pollFirebase();
+  setTimeout(()=>{
+    if(btn){btn.textContent='🔄 Check Now';btn.disabled=false;}
+  },800);
+}
+
+// When tab returns to foreground (e.g. iPad wakes from lock screen),
+// immediately re-poll instead of waiting for the 3s timer.
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&gameMode==='waiting'&&submittedName){
+    pollFirebase();
+    if(!pollTimer)startPolling();
+  }
+});
 
 // ========== MODE DETECTION ==========
 function detectMode(){
@@ -270,8 +318,11 @@ function renderWaiting(){
       '<div style="height:1px;background:var(--border);margin:16px 0"></div>'+
       '<div class="wait-pulse" style="font-size:48px;margin:20px 0">📺</div>'+
       '<div style="font-family:var(--font-d);font-size:20px;font-weight:900;margin-bottom:6px">Watch the Big Screen!</div>'+
-      '<div style="font-size:15px;color:var(--muted);line-height:1.6">The Dungeon Master is running the game.<br>When it\'s time to rebalance, this page will update automatically.</div>'+
-      '<div style="margin-top:20px;font-size:12px;color:var(--muted);opacity:.5">Checking every few seconds...</div>'+
+      '<div style="font-size:15px;color:var(--muted);line-height:1.6">The Market Master is running the game.<br>When it\'s time to rebalance, this page will update automatically.</div>'+
+      '<div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">'+
+        '<div id="pollStatus" style="font-size:12px;color:var(--muted);font-family:var(--font-m)">Last check: just now</div>'+
+        '<button id="manualPollBtn" onclick="manualPoll()" style="padding:6px 14px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-b)">🔄 Check Now</button>'+
+      '</div>'+
     '</div>'+
   '</div>';
 }

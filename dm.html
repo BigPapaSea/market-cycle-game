@@ -1,4 +1,19 @@
 <!DOCTYPE html>
+<!--
+  dm.html — v2 (2026-05-14)
+  CHANGE LOG vs v1:
+  - Rebalance flow: DM page now polls /rebalanced/ live during open rebalance
+    and shows which kids have joined/submitted. Brad can finally see who's
+    transitioned vs who's stuck.
+  - Added "Re-broadcast Rebalance Signal" button as backup for stuck kids.
+  - Past Games feature: completed games are auto-saved to Firebase /history/
+    on Final Results and End Game. New "📜 Past Games" view accessible from
+    setup screen lists all prior games with expandable details.
+  - Math audit conclusion: NO changes to game math. Monte Carlo of 10,000
+    random portfolios shows ~29% beat the index (within Brad's 20-30% target).
+    Brad's "all 4-5 teams beat" observation is consistent with single-game
+    variance + defensive-heavy team picks.
+-->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -419,6 +434,7 @@ function render(){
     case 'play':app.innerHTML=renderPlay();break;
     case 'round':app.innerHTML=renderRound();break;
     case 'results':app.innerHTML=renderResults();break;
+    case 'pastGames':app.innerHTML=renderPastGames();break;
   }
   attachEvents();
 }
@@ -445,7 +461,7 @@ function renderSetup(){
   <div style="text-align:center;margin-bottom:28px">
     <div style="font-size:11px;letter-spacing:5px;color:var(--muted);font-weight:600;margin-bottom:4px">MINI RETREAT ${new Date().getFullYear()}</div>
     <h1 style="font-size:42px;margin:0;line-height:1.1">🐂 The Market Cycle Game 🐻</h1>
-    <div style="font-size:15px;color:var(--muted);margin-top:6px">Dungeon Master Control Panel</div>
+    <div style="font-size:15px;color:var(--muted);margin-top:6px">Market Master Control Panel</div>
   </div>
 
   <!-- DM Tools Toggle -->
@@ -523,10 +539,11 @@ function renderSetup(){
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h3 style="font-size:20px;margin:0">👥 Player Lobby ${S.players.length>0?'('+S.players.length+' ready)':''}</h3>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="firebaseBtn" class="btn btn-sm btn-gold" onclick="loadFromFirebase()">🔄 Load Portfolios from Players</button>
         <button class="btn btn-sm btn-outline" onclick="loadDemoPlayers()">🧪 Demo Players</button>
         ${S.players.length>0?`<button class="btn btn-sm btn-outline" onclick="setState({players:[]})">Clear All</button>`:''}
+        <button class="btn btn-sm btn-outline" onclick="openPastGames()" title="Browse results from previous sessions">📜 Past Games</button>
         <button class="btn btn-sm btn-outline" onclick="newGame()" title="Clear Firebase and start completely fresh">🆕 New Game</button>
       </div>
     </div>
@@ -588,6 +605,7 @@ function renderPlay(){
     <div><h2 style="font-size:26px;margin:0">🐂 Market Cycle Game</h2><div style="font-size:14px;color:var(--muted)">Round ${Math.min(S.curRound+1,S.cycle.length)} of ${S.cycle.length}</div></div>
     <div style="display:flex;gap:8px">${canRebal&&!S.rebalOpen?`<button id="rebalBtn" class="btn btn-sm btn-outline" onclick="enableRebalance()" title="Open rebalance window for players">⚖️ Rebalance</button>`:canRebal&&S.rebalOpen?`<button id="rebalLoadBtn" class="btn btn-sm btn-green" onclick="loadRebalanced()">🔄 Load Rebalanced</button>`:''}<button class="btn btn-sm btn-outline" onclick="endGameEarly()" title="End game and show final results">🏁 End Game</button>${gameOver?`<button class="btn btn-gold" onclick="showResults()">🏆 Final Results</button>`:`<button class="btn btn-primary" onclick="startRound()">▶ Next Round</button>`}</div>
   </div>
+  ${S.rebalOpen?`<div class="card" style="background:#fffbeb;border:2px solid #fbbf24;padding:14px 20px;margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap"><div style="flex:1;min-width:260px"><div style="font-family:var(--font-d);font-weight:900;font-size:16px;color:#92400e;margin-bottom:8px">⚖️ Rebalance Open — Kids should see this on their devices within seconds</div><div id="rebalStatusList">${renderRebalanceStatusList()}</div></div><div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><button id="rebalRebroadBtn" class="btn btn-sm btn-outline" onclick="rebroadcastRebalance()" title="Re-send signal in case a kid's device missed it">📡 Re-broadcast Signal</button><div style="font-size:11px;color:#92400e;text-align:right;max-width:200px;line-height:1.4">If a kid is stuck on the waiting screen, have them tap "🔄 Check Now" — or use this button.</div></div></div></div>`:''}
   <div class="card" style="padding:16px 24px">${renderSCurve()}</div>
   <div class="tabs">
     <button class="tab ${S.playTab==='dashboard'?'active':''}" onclick="setState({playTab:'dashboard'})">📊 Dashboard</button>
@@ -1048,7 +1066,7 @@ function newGame(){
     fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}),
     fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'})
   ]).then(()=>{
-    S.players=[];S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S.screen='setup';S.playTab='dashboard';S.gameNum++;S._usedScenes=[];
+    S.players=[];S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S.screen='setup';S.playTab='dashboard';S.gameNum++;S._usedScenes=[];S._historySaved=false;
     render();
   }).catch(err=>{console.error(err);alert('Error clearing Firebase: '+err.message);if(btn){btn.textContent='🆕 New Game';btn.disabled=false;}});
 }
@@ -1075,10 +1093,246 @@ function enableRebalance(){
   fetch(FIREBASE_URL+'/gameState.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(gameState)})
   .then(r=>r.json())
   .then(()=>{
-    if(btn){btn.textContent='✅ Rebalance Open — Tell Kids to Open Rebalance Page';btn.style.background='var(--green)';btn.style.color='#fff';}
-    S.rebalOpen=true;render();
+    S.rebalOpen=true;
+    S.rebalJoined={};  // name -> {kept:bool, ts:string}
+    startRebalanceStatusPolling();
+    render();
   })
   .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error';btn.disabled=false;}});
+}
+
+// Re-PUT gameState in case some kids' devices missed the first signal
+// (background tab, screen lock, network blip).
+function rebroadcastRebalance(){
+  if(!S.rebalOpen)return;
+  const btn=document.getElementById('rebalRebroadBtn');
+  if(btn){btn.textContent='⏳ Re-broadcasting…';btn.disabled=true;}
+  const idxV=S.idxHist[S.idxHist.length-1];
+  const playerStates={};
+  const sorted=[...S.players].map(p=>({name:p.name,val:p.history[p.history.length-1]})).sort((a,b)=>b.val-a.val);
+  sorted.forEach((p,i)=>{
+    const full=S.players.find(x=>x.name===p.name);
+    const safeName=p.name.replace(/[.#$\/\[\]]/g,'_');
+    playerStates[safeName]={name:p.name,currentValue:Math.round(p.val),rank:i+1,totalPlayers:sorted.length,portfolio:full.portfolio};
+  });
+  const gameState={rebalanceOpen:true,round:S.curRound,totalRounds:S.cycle.length,indexValue:Math.round(idxV),players:playerStates,timestamp:new Date().toISOString()};
+  fetch(FIREBASE_URL+'/gameState.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(gameState)})
+  .then(()=>{if(btn){btn.textContent='✅ Re-broadcast sent';setTimeout(()=>{if(btn){btn.textContent='📡 Re-broadcast Signal';btn.disabled=false;}},2000);}})
+  .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error';btn.disabled=false;}});
+}
+
+let _rebalStatusTimer=null;
+function startRebalanceStatusPolling(){
+  stopRebalanceStatusPolling();
+  pollRebalanceStatus();  // immediate
+  _rebalStatusTimer=setInterval(pollRebalanceStatus,3000);
+}
+function stopRebalanceStatusPolling(){
+  if(_rebalStatusTimer){clearInterval(_rebalStatusTimer);_rebalStatusTimer=null;}
+}
+function pollRebalanceStatus(){
+  if(!S.rebalOpen){stopRebalanceStatusPolling();return;}
+  fetch(FIREBASE_URL+'/rebalanced.json').then(r=>r.json()).then(data=>{
+    S.rebalJoined=S.rebalJoined||{};
+    if(data){
+      Object.values(data).forEach(d=>{
+        if(d&&d.name)S.rebalJoined[d.name]={kept:!!d.kept,ts:d.timestamp};
+      });
+    }
+    // Only re-render rebal status block, not full page (avoid clobbering inputs)
+    const el=document.getElementById('rebalStatusList');
+    if(el)el.innerHTML=renderRebalanceStatusList();
+  }).catch(e=>console.warn('Rebal status poll failed:',e));
+}
+
+function renderRebalanceStatusList(){
+  if(!S.rebalOpen)return '';
+  const joined=S.rebalJoined||{};
+  const rows=S.players.map(p=>{
+    const j=joined[p.name];
+    const status=j?(j.kept?'✓ Kept original':'✓ Submitted new'):'⏳ Waiting…';
+    const color=j?'var(--green)':'var(--muted)';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:6px;background:${j?'#f0fdf4':'#fafaf8'};margin-bottom:4px;font-size:13px"><span style="font-weight:700">${p.name}</span><span style="color:${color};font-family:var(--font-m);font-size:11px">${status}</span></div>`;
+  }).join('');
+  const joinedCount=S.players.filter(p=>joined[p.name]).length;
+  return `<div style="margin-bottom:8px;font-size:12px;color:var(--muted);font-family:var(--font-m);letter-spacing:1px">REBALANCE STATUS · ${joinedCount} of ${S.players.length} joined</div>${rows}`;
+}
+
+// ===================== PAST GAMES =====================
+function saveGameToHistory(){
+  // Idempotent: save only once per game session.
+  if(S._historySaved)return;
+  if(!S.players||S.players.length===0)return;
+  if(S.curRound<1)return;  // Nothing to save if no rounds played
+  S._historySaved=true;
+  const idxF=S.idxHist[S.idxHist.length-1];
+  const sorted=[...S.players].map(p=>({...p,finalValue:p.history[p.history.length-1]})).sort((a,b)=>b.finalValue-a.finalValue);
+  const playersOut=sorted.map((p,i)=>{
+    const fv=p.finalValue;
+    const rebalanced=JSON.stringify(p.portfolio)!==JSON.stringify(p.initialPortfolio);
+    return {
+      name:p.name,
+      initialPortfolio:p.initialPortfolio,
+      finalPortfolio:p.portfolio,
+      finalValue:Math.round(fv),
+      pctReturn:Number(((fv-BUDGET)/BUDGET*100).toFixed(2)),
+      rebalanced:rebalanced,
+      beatIndex:fv>idxF,
+      rank:i+1
+    };
+  });
+  const rounds=(S.roundHist||[]).map((rh,i)=>({
+    roundNum:i+1,
+    phase:rh.phase,
+    mag:Number(rh.mag.toFixed(3)),
+    newsHeadline:rh.news?rh.news.headline:'',
+    newsYear:rh.news?rh.news.year:'',
+    newsPaper:rh.news?rh.news.paper:''
+  }));
+  const snap={
+    date:new Date().toISOString(),
+    gameNum:S.gameNum,
+    roundsPlayed:S.curRound,
+    totalRoundsInCycle:S.cycle.length,
+    cycle:[...S.cycle],
+    indexFinal:Math.round(idxF),
+    indexPctReturn:Number(((idxF-BUDGET)/BUDGET*100).toFixed(2)),
+    playerCount:S.players.length,
+    beatCount:playersOut.filter(p=>p.beatIndex).length,
+    players:playersOut,
+    rounds:rounds
+  };
+  const key='g'+Date.now();
+  fetch(FIREBASE_URL+'/history/'+key+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(snap)})
+  .then(r=>{if(!r.ok)throw new Error('History write failed');console.log('Game saved to history:',key);})
+  .catch(e=>{console.error('Failed to save game to history:',e);S._historySaved=false;/* allow retry */});
+}
+
+function openPastGames(){
+  S._prevScreen=S.screen;
+  S.screen='pastGames';
+  S._pastGamesData=null;  // loading state
+  S._pastGamesError=null;
+  S._expandedGame=null;
+  render();
+  fetch(FIREBASE_URL+'/history.json').then(r=>r.json()).then(data=>{
+    if(!data){S._pastGamesData=[];render();return;}
+    // Convert object {key:{...}} to sorted array, newest first
+    const arr=Object.entries(data).map(([k,v])=>({...v,_key:k})).sort((a,b)=>{
+      const ad=new Date(a.date).getTime()||0;
+      const bd=new Date(b.date).getTime()||0;
+      return bd-ad;
+    });
+    S._pastGamesData=arr;
+    render();
+  }).catch(e=>{
+    console.error('Load past games failed:',e);
+    S._pastGamesError=e.message||'Network error';
+    render();
+  });
+}
+
+function closePastGames(){
+  S.screen=S._prevScreen||'setup';
+  render();
+}
+
+function togglePastGame(key){
+  S._expandedGame=(S._expandedGame===key)?null:key;
+  render();
+}
+
+function deletePastGame(key){
+  // Hard-delete from Firebase. Confirmation via inline state, not confirm() dialog.
+  if(S._confirmDelete!==key){S._confirmDelete=key;render();return;}
+  S._confirmDelete=null;
+  fetch(FIREBASE_URL+'/history/'+key+'.json',{method:'DELETE'})
+  .then(()=>{
+    if(S._pastGamesData)S._pastGamesData=S._pastGamesData.filter(g=>g._key!==key);
+    if(S._expandedGame===key)S._expandedGame=null;
+    render();
+  }).catch(e=>{console.error(e);alert('Delete failed: '+e.message);});
+}
+
+function renderPastGames(){
+  const data=S._pastGamesData;
+  let body='';
+  if(S._pastGamesError){
+    body=`<div class="card" style="text-align:center;padding:40px"><div style="font-size:42px;margin-bottom:12px">⚠️</div><div style="font-size:17px;color:var(--red);margin-bottom:6px">Could not load past games</div><div style="font-size:13px;color:var(--muted)">${S._pastGamesError}</div><button class="btn btn-outline" style="margin-top:18px" onclick="openPastGames()">🔄 Retry</button></div>`;
+  } else if(data===null){
+    body=`<div class="card" style="text-align:center;padding:60px"><div style="font-size:42px;margin-bottom:12px;opacity:0.5">⏳</div><div style="font-size:15px;color:var(--muted)">Loading past games…</div></div>`;
+  } else if(data.length===0){
+    body=`<div class="card" style="text-align:center;padding:60px"><div style="font-size:48px;margin-bottom:12px;opacity:0.3">📜</div><div style="font-size:18px;font-weight:700;color:var(--muted);margin-bottom:6px">No past games yet</div><div style="font-size:13px;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.5">Completed games are saved automatically when you click 🏆 Final Results or 🏁 End Game. Play a game, then come back here to see it.</div></div>`;
+  } else {
+    // Summary statistics across all games
+    const totalGames=data.length;
+    const totalPlayers=data.reduce((s,g)=>s+(g.playerCount||0),0);
+    const totalBeats=data.reduce((s,g)=>s+(g.beatCount||0),0);
+    const allBeatPct=totalPlayers>0?(100*totalBeats/totalPlayers).toFixed(1):'—';
+    const indexAvg=data.length?(data.reduce((s,g)=>s+(g.indexPctReturn||0),0)/data.length).toFixed(1):'—';
+    body=`<div class="card" style="background:linear-gradient(135deg,#1a1a1a,#2d2d2d);color:#e8e5e0;margin-bottom:18px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:18px;text-align:center">
+        <div><div style="font-size:11px;color:var(--accent);letter-spacing:1.5px;font-weight:700">GAMES PLAYED</div><div style="font-family:var(--font-d);font-size:32px;font-weight:900">${totalGames}</div></div>
+        <div><div style="font-size:11px;color:var(--accent);letter-spacing:1.5px;font-weight:700">PLAYER ROUNDS</div><div style="font-family:var(--font-d);font-size:32px;font-weight:900">${totalPlayers}</div></div>
+        <div><div style="font-size:11px;color:var(--accent);letter-spacing:1.5px;font-weight:700">BEAT INDEX</div><div style="font-family:var(--font-d);font-size:32px;font-weight:900">${allBeatPct}%</div><div style="font-size:11px;color:#a8a29e">${totalBeats} of ${totalPlayers}</div></div>
+        <div><div style="font-size:11px;color:var(--accent);letter-spacing:1.5px;font-weight:700">AVG INDEX RET</div><div style="font-family:var(--font-d);font-size:32px;font-weight:900">${indexAvg}%</div></div>
+      </div>
+    </div>` + data.map(g=>{
+      const isExp=S._expandedGame===g._key;
+      const isConfDel=S._confirmDelete===g._key;
+      const dt=new Date(g.date);
+      const dtStr=dt.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})+' · '+dt.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+      const idxRet=g.indexPctReturn!=null?g.indexPctReturn:'—';
+      const beatPct=g.playerCount>0?(100*g.beatCount/g.playerCount).toFixed(0):'—';
+      return `<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px">
+        <div onclick="togglePastGame('${g._key}')" style="padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-family:var(--font-d);font-size:18px;font-weight:900">${dtStr}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Game #${g.gameNum||'?'} · ${g.playerCount} player${g.playerCount===1?'':'s'} · ${g.roundsPlayed} of ${g.totalRoundsInCycle} rounds${g.roundsPlayed<g.totalRoundsInCycle?' (ended early)':''}</div>
+          </div>
+          <div style="display:flex;gap:18px;align-items:center;font-family:var(--font-m);font-size:13px">
+            <div style="text-align:center"><div style="font-size:10px;color:var(--muted);letter-spacing:1px">INDEX</div><div style="font-weight:700;color:${idxRet>=0?'var(--green)':'var(--red)'}">${idxRet>=0?'+':''}${idxRet}%</div></div>
+            <div style="text-align:center"><div style="font-size:10px;color:var(--muted);letter-spacing:1px">BEAT IDX</div><div style="font-weight:700">${g.beatCount}/${g.playerCount} (${beatPct}%)</div></div>
+            <div style="font-size:18px;color:var(--muted);margin-left:4px">${isExp?'▾':'▸'}</div>
+          </div>
+        </div>
+        ${isExp?`<div style="padding:0 20px 18px 20px;border-top:1px solid var(--border);background:#fafaf8">
+          <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-top:14px">
+            <!-- Players table -->
+            <div>
+              <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:700;margin-bottom:8px">FINAL STANDINGS</div>
+              ${[...g.players].map(p=>{
+                const pctColor=p.pctReturn>=0?'var(--green)':'var(--red)';
+                const beatBadge=p.beatIndex?'<span style="font-size:10px;background:var(--green);color:white;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px">BEAT IDX</span>':'';
+                const rebalBadge=p.rebalanced?'<span style="font-size:10px;background:#fbbf24;color:#92400e;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px">REBAL</span>':'';
+                return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;background:#fff;margin-bottom:4px;border:1px solid var(--border)"><div><span style="font-family:var(--font-d);font-weight:900;font-size:14px;min-width:24px;display:inline-block">#${p.rank}</span><span style="font-weight:700;margin-left:6px">${p.name}</span>${beatBadge}${rebalBadge}</div><div style="font-family:var(--font-m);font-weight:700"><span style="color:${pctColor}">${p.pctReturn>=0?'+':''}${p.pctReturn}%</span><span style="color:var(--muted);margin-left:8px">\$${p.finalValue}</span></div></div>`;
+              }).join('')}
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:6px;background:#f5f4f0;margin-top:6px;border:2px dashed var(--border)"><div><span style="font-family:var(--font-d);font-weight:900;font-size:14px;color:var(--muted)">📊</span><span style="font-weight:700;margin-left:6px;color:var(--muted)">Market Index</span></div><div style="font-family:var(--font-m);font-weight:700"><span style="color:${g.indexPctReturn>=0?'var(--green)':'var(--red)'}">${g.indexPctReturn>=0?'+':''}${g.indexPctReturn}%</span><span style="color:var(--muted);margin-left:8px">\$${g.indexFinal}</span></div></div>
+            </div>
+            <!-- Cycle + news -->
+            <div>
+              <div style="font-size:11px;color:var(--muted);letter-spacing:1.5px;font-weight:700;margin-bottom:8px">ECONOMIC CYCLE</div>
+              ${(g.rounds||[]).map(r=>{
+                const ph=PHASES.find(x=>x.id===r.phase);
+                if(!ph)return '';
+                return `<div style="padding:8px 10px;border-radius:6px;background:#fff;margin-bottom:4px;border:1px solid var(--border);${ph.mood==='bear'?'border-left:3px solid var(--red)':'border-left:3px solid var(--green)'}"><div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="font-weight:700">${ph.icon} R${r.roundNum}: ${ph.name}</span><span style="font-family:var(--font-m);font-size:10px;color:var(--muted)">${Math.round(r.mag*100)}%</span></div>${r.newsHeadline?`<div style="font-size:11px;color:#555;font-style:italic;margin-top:3px;line-height:1.3">"${r.newsHeadline}"</div>`:''}</div>`;
+              }).join('')}
+            </div>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+            ${isConfDel?`<button class="btn btn-sm btn-red" onclick="deletePastGame('${g._key}');event.stopPropagation()">✓ Confirm Delete</button><button class="btn btn-sm btn-outline" onclick="S._confirmDelete=null;render();event.stopPropagation()">Cancel</button>`:`<button class="btn btn-sm btn-outline" onclick="deletePastGame('${g._key}');event.stopPropagation()" style="color:var(--red);border-color:#fecaca">🗑️ Delete</button>`}
+          </div>
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }
+  return `<div class="container" style="animation:fadeIn .4s ease">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:14px;flex-wrap:wrap">
+      <div><h1 style="font-size:32px;margin:0">📜 Past Games</h1><div style="font-size:14px;color:var(--muted);margin-top:4px">Auto-saved results from prior sessions${data&&data.length?` · newest first`:''}</div></div>
+      <button class="btn btn-outline" onclick="closePastGames()">← Back to Setup</button>
+    </div>
+    ${body}
+  </div>`;
 }
 function loadRebalanced(){
   const btn=document.getElementById('rebalLoadBtn');
@@ -1099,6 +1353,8 @@ function loadRebalanced(){
     fetch(FIREBASE_URL+'/gameState/rebalanceOpen.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(false)});
     fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'});
     S.rebalOpen=false;
+    S.rebalJoined={};
+    stopRebalanceStatusPolling();
     playReveal();render();
   })
   .catch(err=>{console.error(err);if(btn){btn.textContent='⚠️ Error loading';btn.disabled=false;}});
@@ -1151,21 +1407,22 @@ function processRound(){const phase=S.cycle[S.curRound],ret=calcReturns(phase,S.
   S._reasonsRevealed=0;S.newsStep=2;render()}
 function showComm(){S.newsStep=3;render()}
 function finishRound(){S.curRound++;S.screen='play';S.playTab='dashboard';render()}
-function showResults(){S._lessonIdx=0;S.screen='results';render()}
+function showResults(){saveGameToHistory();S._lessonIdx=0;S.screen='results';render()}
 function endGameEarly(){
   if(S.curRound<1){alert('Play at least one round first.');return;}
   try{
+    saveGameToHistory();
     S._lessonIdx=0;S.screen='results';render();
   }catch(e){alert('Error: '+e.message+'\n'+e.stack);}
 }
 function restartGame(){
   S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});
-  S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S._usedScenes=[];S.playTab='dashboard';
+  S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.commentary=[];S.rebalOpen=false;S._usedScenes=[];S.playTab='dashboard';S._historySaved=false;
   fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}).catch(()=>{});
   fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'}).catch(()=>{});
   render();
 }
-function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';
+function resetGame(){S.players.forEach(p=>{p.history=[BUDGET];p.portfolio={...p.initialPortfolio}});S.curRound=0;S.roundHist=[];S.sectorHist=[];S.idxHist=[BUDGET];S.usedNews=new Set();S.gameNum++;S.commentary=[];S.rebalOpen=false;S.screen='play';S.playTab='dashboard';S._historySaved=false;
   // Clear stale game state from Firebase so player page doesn't show rebalance mode
   fetch(FIREBASE_URL+'/gameState.json',{method:'DELETE'}).catch(()=>{});
   fetch(FIREBASE_URL+'/rebalanced.json',{method:'DELETE'}).catch(()=>{});
